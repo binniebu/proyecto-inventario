@@ -29,8 +29,11 @@ class Index extends PublicController
      */
     public function run() :void
     {
-        $viewData = array();
-        \Views\Renderer::render("index", $viewData);
+        if (!\Utilities\Security::isLogged()) {
+            \Utilities\Site::redirectTo("index.php?page=sec_login");
+        }
+        \Utilities\Site::redirectTo("index.php?page=admin_admin");
     }
 }
+
 ?>

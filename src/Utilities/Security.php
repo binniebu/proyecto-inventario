@@ -50,8 +50,13 @@ class Security {
                 \Dao\Security\Security::addNewFeature($function, $function, "ACT", "CTR");
             }
         }
+        // Bypass para el Propietario / SuperUsuario (Acceso total automático)
+        if (self::isInRol($userId, "PRP")) {
+            return true;
+        }
         return \Dao\Security\Security::getFeatureByUsuario($userId, $function);
     }
+
     public static function isInRol($userId, $rol):bool
     {
         if (\Utilities\Context::getContextByKey("DEVELOPMENT") == "1") {
