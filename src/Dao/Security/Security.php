@@ -47,7 +47,7 @@ class Security extends \Dao\Table
         return self::obtenerRegistros($sqlstr, array());
     }
 
-    static public function newUsuario($email, $password)
+    static public function newUsuario($email, $password, $username = "John Doe", $userest = 'ACT', $usertipo = 'PUBLICO')
     {
         if (!\Utilities\Validators::IsValidEmail($email)) {
             throw new Exception("Correo no es válido");
@@ -65,13 +65,13 @@ class Security extends \Dao\Table
         unset($newUser["userpswdchg"]);
 
         $newUser["useremail"] = $email;
-        $newUser["username"] = "John Doe";
+        $newUser["username"] = $username;
         $newUser["userpswd"] = $hashedPassword;
-        $newUser["userpswdest"] = Estados::ACTIVO;
+        $newUser["userpswdest"] = 'ACT';
         $newUser["userpswdexp"] = date('Y-m-d', time() + 7776000);  //(3*30*24*60*60) (m d h mi s)
-        $newUser["userest"] = Estados::ACTIVO;
+        $newUser["userest"] = $userest;
         $newUser["useractcod"] = hash("sha256", $email.time());
-        $newUser["usertipo"] = UsuarioTipo::PUBLICO;
+        $newUser["usertipo"] = $usertipo;
 
         $sqlIns = "INSERT INTO `usuario` (`useremail`, `username`, `userpswd`,
             `userfching`, `userpswdest`, `userpswdexp`, `userest`, `useractcod`,
@@ -82,7 +82,6 @@ class Security extends \Dao\Table
             now(), :usertipo);";
 
         return self::executeNonQuery($sqlIns, $newUser);
-
     }
 
     static public function getUsuarioByEmail($email)
@@ -198,6 +197,7 @@ class Security extends \Dao\Table
     {
         $sqlstr = "select * from roles a inner join
         roles_usuarios b on a.rolescod = b.rolescod where a.rolesest = 'ACT'
+        and b.roleuserest = 'ACT'
         and b.usercod=:usercod and a.rolescod=:rolescod limit 1;";
         $resultados = self::obtenerRegistros(
             $sqlstr,
@@ -213,6 +213,7 @@ class Security extends \Dao\Table
     {
         $sqlstr = "select * from roles a inner join
         roles_usuarios b on a.rolescod = b.rolescod where a.rolesest = 'ACT'
+        and b.roleuserest = 'ACT'
         and b.usercod=:usercod;";
         $resultados = self::obtenerRegistros(
             $sqlstr,
@@ -242,13 +243,51 @@ class Security extends \Dao\Table
             array("fncod" => $fncod, "rolescod" => $rolescod)
         );
     }
-    static public function getUnAssignedFeatures($rolescod)
+    static public function getUsuarioByCode($usercod)
     {
-        
+        $sqlstr = "SELECT * FROM `usuario` WHERE `usercod` = :usercod;";
+        return self::obtenerUnRegistro($sqlstr, array("usercod" => $usercod));
     }
-    static public function getUnAssignedRoles($userCod)
-    {
 
+    static public function updateUsuario($usercod, $email, $username, $userest, $usertipo)
+    {
+        $sqlupd = "UPDATE `usuario` SET `useremail` = :useremail, `username` = :username, `userest` = :userest, `usertipo` = :usertipo WHERE `usercod` = :usercod;";
+        return self::executeNonQuery(
+            $sqlupd,
+            array(
+                "useremail" => $email,
+                "username" => $username,
+                "userest" => $userest,
+                "usertipo" => $usertipo,
+                "usercod" => $usercod
+            )
+        );
+    }
+
+    static public function addRolToUser($userCod, $rolescod)
+    {
+        $sqlstr = "SELECT * FROM roles_usuarios WHERE usercod = :usercod AND rolescod = :rolescod;";
+        $exists = self::obtenerUnRegistro($sqlstr, array("usercod" => $userCod, "rolescod" => $rolescod));
+        if ($exists) {
+            $sqlupd = "UPDATE roles_usuarios SET roleuserest = 'ACT', roleuserfch = NOW() WHERE usercod = :usercod AND rolescod = :rolescod;";
+            return self::executeNonQuery($sqlupd, array("usercod" => $userCod, "rolescod" => $rolescod));
+        } else {
+            $sqlins = "INSERT INTO roles_usuarios (usercod, rolescod, roleuserest, roleuserfch, roleuserexp) 
+                       VALUES (:usercod, :rolescod, 'ACT', NOW(), DATE_ADD(NOW(), INTERVAL 1 YEAR));";
+            return self::executeNonQuery($sqlins, array("usercod" => $userCod, "rolescod" => $rolescod));
+        }
+    }
+
+    static public function clearRolesFromUser($userCod)
+    {
+        $sqlupd = "UPDATE roles_usuarios SET roleuserest = 'INA' WHERE usercod = :usercod;";
+        return self::executeNonQuery($sqlupd, array("usercod" => $userCod));
+    }
+
+    static public function getRoles()
+    {
+        $sqlstr = "SELECT * FROM roles WHERE rolesest = 'ACT';";
+        return self::obtenerRegistros($sqlstr, array());
     }
     private function __construct()
     {

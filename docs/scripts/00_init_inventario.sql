@@ -151,9 +151,10 @@ INSERT INTO `categorias` (`catnom`, `catest`) VALUES
 -- Usuarios Iniciales (Contraseña de prueba por defecto: "Test1234$")
 -- El hash corresponde al algoritmo bcrypt de PHP
 INSERT INTO `usuario` (`useremail`, `username`, `userpswd`, `userfching`, `userpswdest`, `userpswdexp`, `userest`, `usertipo`) VALUES
-('propietario@inventario.com', 'Don Cleto (Propietario)', '$2y$10$U2D70U7Hw45sP9hJcO4D9.Q/rR5.Yt5Lw.P/Fp685B5oF8U1m62iC', NOW(), 'ACT', DATE_ADD(NOW(), INTERVAL 90 DAY), 'ACT', 'PRP'),
-('empleado@inventario.com', 'Juan Perez (Administrador)', '$2y$10$U2D70U7Hw45sP9hJcO4D9.Q/rR5.Yt5Lw.P/Fp685B5oF8U1m62iC', NOW(), 'ACT', DATE_ADD(NOW(), INTERVAL 90 DAY), 'ACT', 'ADM'),
-('auditor@inventario.com', 'Lic. Martinez (Auditor)', '$2y$10$U2D70U7Hw45sP9hJcO4D9.Q/rR5.Yt5Lw.P/Fp685B5oF8U1m62iC', NOW(), 'ACT', DATE_ADD(NOW(), INTERVAL 90 DAY), 'ACT', 'AUD');
+('propietario@inventario.com', 'Don Cleto (Propietario)', '$2y$10$D9zLFYya/6qqHDmlecH5SuSNXUps1YojHLDOtq97Cg8rpjtWmbhIS', NOW(), 'ACT', DATE_ADD(NOW(), INTERVAL 90 DAY), 'ACT', 'PRP'),
+('empleado@inventario.com', 'Juan Perez (Administrador)', '$2y$10$D9zLFYya/6qqHDmlecH5SuSNXUps1YojHLDOtq97Cg8rpjtWmbhIS', NOW(), 'ACT', DATE_ADD(NOW(), INTERVAL 90 DAY), 'ACT', 'ADM'),
+('auditor@inventario.com', 'Lic. Martinez (Auditor)', '$2y$10$D9zLFYya/6qqHDmlecH5SuSNXUps1YojHLDOtq97Cg8rpjtWmbhIS', NOW(), 'ACT', DATE_ADD(NOW(), INTERVAL 90 DAY), 'ACT', 'AUD');
+
 
 -- Asignación de Roles
 INSERT INTO `roles_usuarios` (`usercod`, `rolescod`, `roleuserest`, `roleuserfch`, `roleuserexp`) VALUES
