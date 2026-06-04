@@ -58,23 +58,24 @@ CREATE TABLE IF NOT EXISTS `funciones_roles` (
   CONSTRAINT `rol_funcion_key` FOREIGN KEY (`fncod`) REFERENCES `funciones` (`fncod`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `bitacora` (
-  `bitacoracod` int(11) NOT NULL AUTO_INCREMENT,
-  `bitacorafch` datetime DEFAULT NULL,
-  `bitprograma` varchar(255) DEFAULT NULL,
-  `bitdescripcion` varchar(255) DEFAULT NULL,
-  `bitobservacion` mediumtext,
-  `bitTipo` char(3) DEFAULT NULL,
-  `bitusuario` bigint(18) DEFAULT NULL,
-  PRIMARY KEY (`bitacoracod`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- 2. ESTRUCTURA DE INVENTARIO Y CATEGORÍAS
+-- 2. ESTRUCTURA DE INVENTARIO, CATEGORÍAS Y PROVEEDORES
 CREATE TABLE IF NOT EXISTS `categorias` (
   `catid` BIGINT(8) NOT NULL AUTO_INCREMENT,
   `catnom` VARCHAR(45) NOT NULL,
   `catest` CHAR(3) NULL DEFAULT 'ACT',
   PRIMARY KEY (`catid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `proveedores` (
+  `provId` bigint(10) NOT NULL AUTO_INCREMENT,
+  `provNombre` varchar(80) NOT NULL COMMENT 'Nombre o Razón Social',
+  `provContacto` varchar(80) DEFAULT NULL COMMENT 'Nombre del contacto de ventas',
+  `provTelefono` varchar(20) DEFAULT NULL,
+  `provEmail` varchar(80) DEFAULT NULL,
+  `provDireccion` text DEFAULT NULL,
+  `provEst` char(3) DEFAULT 'ACT' COMMENT 'ACT=Activo, INA=Inactivo',
+  PRIMARY KEY (`provId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `productos` (
@@ -83,6 +84,7 @@ CREATE TABLE IF NOT EXISTS `productos` (
   `invPrdCodInt` varchar(128) DEFAULT NULL COMMENT 'Código interno institucional',
   `invPrdDsc` varchar(128) NOT NULL COMMENT 'Descripción o Nombre del Producto',
   `catid` BIGINT(8) DEFAULT NULL COMMENT 'Categoría del Producto',
+  `provId` bigint(10) DEFAULT NULL COMMENT 'Proveedor del Producto',
   `invPrdPrecioVenta` decimal(13,2) NOT NULL DEFAULT '0.00' COMMENT 'Precio al público',
   `invPrdCosto` decimal(13,2) NOT NULL DEFAULT '0.00' COMMENT 'Costo de adquisición',
   `invPrdStock` int(11) NOT NULL DEFAULT '0' COMMENT 'Stock Físico Consolidado',
@@ -97,6 +99,7 @@ CREATE TABLE IF NOT EXISTS `productos` (
   UNIQUE KEY `invPrdBrCod_UNIQUE` (`invPrdBrCod`),
   UNIQUE KEY `invPrdCodIng_UNIQUE` (`invPrdCodInt`),
   CONSTRAINT `fk_prod_cat` FOREIGN KEY (`catid`) REFERENCES `categorias` (`catid`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_prod_prov` FOREIGN KEY (`provId`) REFERENCES `proveedores` (`provId`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_prod_user_crt` FOREIGN KEY (`invPrdCreatedBy`) REFERENCES `usuario` (`usercod`) ON DELETE SET NULL,
   CONSTRAINT `fk_prod_user_mod` FOREIGN KEY (`invPrdModifiedBy`) REFERENCES `usuario` (`usercod`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

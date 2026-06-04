@@ -35,15 +35,8 @@ class Nav {
             );
         }
 
-        // 4. Bitácora de Auditoría
-        if (\Utilities\Security::isAuthorized($userID, "Controllers\\Admin\\Bitacoras")) {
-            $tmpNAVIGATION[] = array(
-                "nav_url" => "index.php?page=admin_bitacoras",
-                "nav_label" => "Bitácora",
-                "nav_icon" => "fas fa-shield-alt"
-            );
-        }
-        
+
+
         // 5. Gestión de Usuarios
         if (\Utilities\Security::isAuthorized($userID, "Controllers\\Mnt\\Usuarios")) {
             $tmpNAVIGATION[] = array(
