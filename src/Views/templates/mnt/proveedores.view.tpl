@@ -59,11 +59,18 @@
           <span class="badge {{provEst_class}}">{{provEst_dsc}}</span>
         </td>
         <td style="text-align: right;">
-          {{if ~CanUpdate}}
-          <a href="index.php?page=mnt_proveedor&mode=UPD&provId={{provId}}" class="btn" title="Editar">
-            <i class="fas fa-edit"></i>
-          </a>
-          {{endif ~CanUpdate}}
+          <div style="display: inline-flex; gap: 0.35rem; justify-content: flex-end; align-items: center;">
+            {{if ~CanView}}
+            <a href="index.php?page=mnt_proveedor&mode=DSP&provId={{provId}}" class="btn" title="Ver Detalles">
+              <i class="fas fa-eye"></i>
+            </a>
+            {{endif ~CanView}}
+            {{if ~CanUpdate}}
+            <a href="index.php?page=mnt_proveedor&mode=UPD&provId={{provId}}" class="btn" title="Editar">
+              <i class="fas fa-edit"></i>
+            </a>
+            {{endif ~CanUpdate}}
+          </div>
         </td>
       </tr>
       {{endfor Proveedores}}
