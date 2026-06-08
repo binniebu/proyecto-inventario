@@ -7,13 +7,15 @@
   <title>{{SITE_TITLE}}</title>
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/{{BASE_DIR}}/public/css/appstyle.css" />
+  
+  <link rel="stylesheet" href="{{BASE_DIR}}/public/css/appstyle.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
   {{foreach SiteLinks}}
-  <link rel="stylesheet" href="/{{~BASE_DIR}}/{{this}}" />
+  <link rel="stylesheet" href="{{~BASE_DIR}}/{{this}}" />
   {{endfor SiteLinks}}
   {{foreach BeginScripts}}
-  <script src="/{{~BASE_DIR}}/{{this}}"></script>
+  <script src="{{~BASE_DIR}}/{{this}}"></script>
   {{endfor BeginScripts}}
 </head>
 
@@ -24,8 +26,7 @@
     <div class="sidebar_header">
       <span class="sidebar_title">Inventario</span>
       <label for="menu_toggle" class="sidebar_toggle_btn">
-        <i class="fas fa-angles-left"></i> <!-- Icono moderno para colapsar -->
-      </label>
+        <i class="fas fa-angles-left"></i> </label>
     </div>
     <ul class="nav_list">
       <li><a href="index.php?page=admin_admin"><i class="fas fa-chart-line"></i>&nbsp;Dashboard</a></li>
@@ -64,10 +65,11 @@
   </main>
 
   <footer>
-    <div>Todo los Derechos Reservados 2021 &copy;</div>
+    <div>Todo los Derechos Reservados 2026 &copy;</div>
   </footer>
+  
   {{foreach EndScripts}}
-  <script src="/{{~BASE_DIR}}/{{this}}"></script>
+  <script src="{{~BASE_DIR}}/{{this}}"></script>
   {{endfor EndScripts}}
 </body>
 </html>
