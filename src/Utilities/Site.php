@@ -8,6 +8,9 @@ class Site
     {
         $donenv = new \Utilities\DotEnv("parameters.env");
         \Utilities\Context::setArrayToContext($donenv->load());
+        $baseDir = \Utilities\Context::getContextByKey("BASE_DIR");
+        $basePath = $baseDir ? "/" . trim($baseDir, "/") : "";
+        \Utilities\Context::setContext("BASE_PATH", $basePath);
         date_default_timezone_set(\Utilities\Context::getContextByKey("TIMEZONE"));
     }
     public static function getPageRequest()
