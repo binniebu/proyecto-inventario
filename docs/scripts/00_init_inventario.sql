@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS `usuario` (
   `useractcod` varchar(128) DEFAULT NULL,
   `userpswdchg` varchar(128) DEFAULT NULL,
   `usertipo` char(3) DEFAULT NULL COMMENT 'Tipo de Usuario, Normal, Consultor o Cliente',
+  `userfailedattempts` int(11) DEFAULT 0,
+  `userblockedat` datetime DEFAULT NULL,
   PRIMARY KEY (`usercod`),
   UNIQUE KEY `useremail_UNIQUE` (`useremail`),
   KEY `usertipo` (`usertipo`,`useremail`,`usercod`,`userest`)

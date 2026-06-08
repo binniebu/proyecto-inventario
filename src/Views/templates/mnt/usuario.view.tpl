@@ -53,7 +53,9 @@
       <select id="userest" name="userest" {{if select_disabled}}disabled{{endif select_disabled}}>
         <option value="ACT" {{userest_ACT}}>Activo</option>
         <option value="INA" {{userest_INA}}>Inactivo (Desactivado)</option>
+        {{if show_blocked_option}}
         <option value="BLQ" {{userest_BLQ}}>Bloqueado</option>
+        {{endif show_blocked_option}}
       </select>
       {{if is_self_edit}}
       <span style="font-size: 0.8rem; color: #ef4444; margin-top: 0.35rem; line-height: 1.4;"><i class="fas fa-exclamation-triangle"></i> No puedes desactivar o bloquear tu propio usuario administrador.</span>

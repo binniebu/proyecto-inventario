@@ -29,7 +29,22 @@ class Login extends \Controllers\PublicController
             }
             if (! $this->hasError) {
                 if ($dbUser = \Dao\Security\Security::getUsuarioByEmail($this->txtEmail)) {
-                    if ($dbUser["userest"] != \Dao\Security\Estados::ACTIVO) {
+                    if ($dbUser["userest"] === "BLQ") {
+                        $blockedAt = strtotime($dbUser["userblockedat"]);
+                        $now = time();
+                        $diffSeconds = $now - $blockedAt;
+                        if ($diffSeconds >= 300) {
+                            \Dao\Security\Security::resetearIntentos($dbUser["usercod"]);
+                            $dbUser = \Dao\Security\Security::getUsuarioByEmail($this->txtEmail);
+                        } else {
+                            $remainingSeconds = 300 - $diffSeconds;
+                            $remainingMinutes = ceil($remainingSeconds / 60);
+                            $this->generalError = sprintf("Tu cuenta está bloqueada temporalmente por seguridad. Inténtalo de nuevo en %d minuto(s).", $remainingMinutes);
+                            $this->hasError = true;
+                        }
+                    }
+
+                    if (!$this->hasError && $dbUser["userest"] !== "ACT") {
                         $this->generalError = "¡Credenciales son incorrectas!";
                         $this->hasError = true;
                         error_log(
@@ -41,19 +56,30 @@ class Login extends \Controllers\PublicController
                             )
                         );
                     }
-                    if (!\Dao\Security\Security::verifyPassword($this->txtPswd, $dbUser["userpswd"])) {
-                        $this->generalError = "¡Credenciales son incorrectas!";
-                        $this->hasError = true;
-                        error_log(
-                            sprintf(
-                                "ERROR: %d %s contraseña incorrecta",
-                                $dbUser["usercod"],
-                                $dbUser["useremail"]
-                            )
-                        );
-                        // Aqui se debe establecer acciones segun la politica de la institucion.
+
+                    if (!$this->hasError) {
+                        if (!\Dao\Security\Security::verifyPassword($this->txtPswd, $dbUser["userpswd"])) {
+                            \Dao\Security\Security::registrarIntentoFallido($dbUser["usercod"], intval($dbUser["userfailedattempts"]));
+                            
+                            $attemptsLeft = 2 - intval($dbUser["userfailedattempts"]);
+                            if ($attemptsLeft <= 0) {
+                                $this->generalError = "Tu cuenta ha sido bloqueada temporalmente por seguridad por 5 minutos.";
+                            } else {
+                                $this->generalError = sprintf("¡Credenciales son incorrectas! Intentos restantes antes del bloqueo: %d", $attemptsLeft);
+                            }
+                            $this->hasError = true;
+                            error_log(
+                                sprintf(
+                                    "ERROR: %d %s contraseña incorrecta",
+                                    $dbUser["usercod"],
+                                    $dbUser["useremail"]
+                                )
+                            );
+                        }
                     }
+
                     if (! $this->hasError) {
+                        \Dao\Security\Security::resetearIntentos($dbUser["usercod"]);
                         \Utilities\Security::login(
                             $dbUser["usercod"],
                             $dbUser["username"],
@@ -62,7 +88,7 @@ class Login extends \Controllers\PublicController
                         if (\Utilities\Context::getContextByKey("redirto") !== "") {
                             \Utilities\Site::redirectTo(
                                 \Utilities\Context::getContextByKey("redirto")
-                            );
+                             );
                         } else {
                             \Utilities\Site::redirectTo("index.php");
                         }

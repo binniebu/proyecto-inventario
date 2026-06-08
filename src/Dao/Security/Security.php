@@ -289,6 +289,25 @@ class Security extends \Dao\Table
         $sqlstr = "SELECT * FROM roles WHERE rolesest = 'ACT';";
         return self::obtenerRegistros($sqlstr, array());
     }
+
+    static public function resetearIntentos($usercod)
+    {
+        $sqlstr = "UPDATE `usuario` SET `userfailedattempts` = 0, `userblockedat` = NULL, `userest` = 'ACT' WHERE `usercod` = :usercod;";
+        return self::executeNonQuery($sqlstr, ["usercod" => $usercod]);
+    }
+
+    static public function registrarIntentoFallido($usercod, $currentAttempts)
+    {
+        $newAttempts = $currentAttempts + 1;
+        if ($newAttempts >= 3) {
+            $sqlstr = "UPDATE `usuario` SET `userfailedattempts` = :attempts, `userest` = 'BLQ', `userblockedat` = NOW() WHERE `usercod` = :usercod;";
+            return self::executeNonQuery($sqlstr, ["attempts" => $newAttempts, "usercod" => $usercod]);
+        } else {
+            $sqlstr = "UPDATE `usuario` SET `userfailedattempts` = :attempts WHERE `usercod` = :usercod;";
+            return self::executeNonQuery($sqlstr, ["attempts" => $newAttempts, "usercod" => $usercod]);
+        }
+    }
+
     private function __construct()
     {
     }

@@ -223,6 +223,7 @@ class Usuario extends PrivateController
         $this->user["userest_ACT"] = ($this->user["userest"] === "ACT") ? "selected" : "";
         $this->user["userest_INA"] = ($this->user["userest"] === "INA") ? "selected" : "";
         $this->user["userest_BLQ"] = ($this->user["userest"] === "BLQ") ? "selected" : "";
+        $this->user["show_blocked_option"] = ($this->user["userest"] === "BLQ");
 
         // Map errors
         $this->user["hasErrors"] = (count($this->aErrors) > 0);
