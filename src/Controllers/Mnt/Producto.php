@@ -1,4 +1,4 @@
-<?php
+?php
 
 namespace Controllers\Mnt;
 
@@ -20,6 +20,7 @@ class Producto extends PrivateController
         "invPrdCodInt" => "",
         "invPrdDsc" => "",
         "catid" => 0,
+        "provId" => 0,
         "invPrdPrecioVenta" => 0.00,
         "invPrdCosto" => 0.00,
         "invPrdStock" => 0,
@@ -77,16 +78,6 @@ class Producto extends PrivateController
             Site::redirectToWithMsg("index.php?page=mnt_productos", "¡Acción no permitida!");
         }
 
-        if ($this->mode === "INS" && !self::isFeatureAutorized("Controllers\\Mnt\\Producto\\New")) {
-            Site::redirectToWithMsg("index.php?page=mnt_productos", "¡No tiene permisos para realizar esta acción!");
-        }
-        if ($this->mode === "UPD" && !self::isFeatureAutorized("Controllers\\Mnt\\Producto\\Upd")) {
-            Site::redirectToWithMsg("index.php?page=mnt_productos", "¡No tiene permisos para realizar esta acción!");
-        }
-        if ($this->mode === "DSP" && !self::isFeatureAutorized("Controllers\\Mnt\\Producto\\Dsp")) {
-            Site::redirectToWithMsg("index.php?page=mnt_productos", "¡No tiene permisos para realizar esta acción!");
-        }
-
         if ($this->mode !== "INS") {
             $dbProduct = DaoProductos::getProductoByCode($this->id);
             if (!$dbProduct) {
@@ -106,6 +97,7 @@ class Producto extends PrivateController
         $this->product["invPrdCodInt"] = isset($_POST["invPrdCodInt"]) ? trim($_POST["invPrdCodInt"]) : "";
         $this->product["invPrdDsc"] = isset($_POST["invPrdDsc"]) ? trim($_POST["invPrdDsc"]) : "";
         $this->product["catid"] = isset($_POST["catid"]) ? intval($_POST["catid"]) : 0;
+        $this->product["provId"] = isset($_POST["provId"]) ? intval($_POST["provId"]) : 0;
         $this->product["invPrdPrecioVenta"] = isset($_POST["invPrdPrecioVenta"]) ? floatval($_POST["invPrdPrecioVenta"]) : 0.00;
         $this->product["invPrdCosto"] = isset($_POST["invPrdCosto"]) ? floatval($_POST["invPrdCosto"]) : 0.00;
         $this->product["invPrdStockMin"] = isset($_POST["invPrdStockMin"]) ? intval($_POST["invPrdStockMin"]) : 10;
@@ -210,7 +202,8 @@ class Producto extends PrivateController
                     $this->product["invPrdEst"],
                     $userId,
                     $loteCod,
-                    $loteFechaVencimiento
+                    $loteFechaVencimiento,
+                    $this->product["provId"]
                 );
 
                 if ($result) {
@@ -237,7 +230,8 @@ class Producto extends PrivateController
                     $this->product["invPrdStockMin"],
                     $this->product["invPrdTip"],
                     $this->product["invPrdEst"],
-                    $userId
+                    $userId,
+                    $this->product["provId"]
                 );
 
                 if ($result) {
@@ -297,6 +291,7 @@ class Producto extends PrivateController
         $this->product["stock_readonly"] = ($this->mode === "INS") ? "" : "readonly";
         $this->product["showaction"] = ($this->mode !== "DSP") ? true : false;
         $this->product["show_lote_fields"] = ($this->mode === "INS");
+        $this->product["provId"] = isset($this->product["provId"]) ? intval($this->product["provId"]) : 0;
 
         // Map type indicators
         $this->product["invPrdTip_PRD"] = ($this->product["invPrdTip"] === "PRD") ? "selected" : "";
@@ -339,5 +334,21 @@ class Producto extends PrivateController
             ];
         }
         $this->product["Categorias"] = $categoriesFormatted;
+
+        $proveedoresList = DaoProductos::getProveedoresActivos();
+        $proveedoresFormatted = [];
+        $selectedProveedorNombre = "";
+        foreach ($proveedoresList as $prov) {
+            $provId = intval($prov["provId"]);
+            $proveedoresFormatted[] = [
+                "provId" => $provId,
+                "provNombre" => $prov["provNombre"]
+            ];
+            if ($provId === intval($this->product["provId"])) {
+                $selectedProveedorNombre = $prov["provNombre"];
+            }
+        }
+        $this->product["proveedores_json"] = json_encode($proveedoresFormatted);
+        $this->product["provNombre"] = $selectedProveedorNombre;
     }
 }
