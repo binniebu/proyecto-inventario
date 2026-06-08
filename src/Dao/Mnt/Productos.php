@@ -10,6 +10,12 @@ class Productos extends \Dao\Table
         return self::obtenerRegistros($sqlstr, []);
     }
 
+    static public function getProveedoresActivos()
+    {
+        $sqlstr = "SELECT provId, provNombre FROM proveedores WHERE provEst = 'ACT' ORDER BY provNombre;";
+        return self::obtenerRegistros($sqlstr, []);
+    }
+
     static public function getCategoriaByCode($catid)
     {
         $sqlstr = "SELECT * FROM categorias WHERE catid = :catid;";
@@ -43,16 +49,16 @@ class Productos extends \Dao\Table
         return self::obtenerUnRegistro($sqlstr, ["intcode" => $intcode]);
     }
 
-    static public function newProducto($barcode, $intcode, $dsc, $catid, $price, $cost, $stock, $stockmin, $type, $est, $userId, $loteCod = "", $loteFechaVencimiento = "")
+    static public function newProducto($barcode, $intcode, $dsc, $catid, $price, $cost, $stock, $stockmin, $type, $est, $userId, $loteCod = "", $loteFechaVencimiento = "", $provId = 0)
     {
         $sqlins = "INSERT INTO productos (
             invPrdId, invPrdBrCod, invPrdCodInt, invPrdDsc, catid, 
-            invPrdPrecioVenta, invPrdCosto, invPrdStock, invPrdStockMin, 
+            provId, invPrdPrecioVenta, invPrdCosto, invPrdStock, invPrdStockMin, 
             invPrdTip, invPrdEst, invPrdCreatedBy, invPrdCreatedAt, 
             invPrdModifiedBy, invPrdModifiedAt
         ) VALUES (
             NULL, :barcode, :intcode, :dsc, :catid, 
-            :price, :cost, :stock, :stockmin, 
+            :provId, :price, :cost, :stock, :stockmin, 
             :type, :est, :userId, NOW(), 
             :userId, NOW()
         );";
@@ -62,6 +68,7 @@ class Productos extends \Dao\Table
             "intcode" => $intcode === "" ? null : $intcode,
             "dsc" => $dsc,
             "catid" => $catid === 0 ? null : $catid,
+            "provId" => $provId === 0 ? null : $provId,
             "price" => $price,
             "cost" => $cost,
             "stock" => $stock,
@@ -85,13 +92,14 @@ class Productos extends \Dao\Table
         return false;
     }
 
-    static public function updateProducto($invPrdId, $barcode, $intcode, $dsc, $catid, $price, $cost, $stock, $stockmin, $type, $est, $userId)
+    static public function updateProducto($invPrdId, $barcode, $intcode, $dsc, $catid, $price, $cost, $stock, $stockmin, $type, $est, $userId, $provId = 0)
     {
         $sqlupd = "UPDATE productos SET 
             invPrdBrCod = :barcode, 
             invPrdCodInt = :intcode, 
             invPrdDsc = :dsc, 
             catid = :catid, 
+            provId = :provId, 
             invPrdPrecioVenta = :price, 
             invPrdCosto = :cost, 
             invPrdStock = :stock, 
@@ -107,6 +115,7 @@ class Productos extends \Dao\Table
             "intcode" => $intcode === "" ? null : $intcode,
             "dsc" => $dsc,
             "catid" => $catid === 0 ? null : $catid,
+            "provId" => $provId === 0 ? null : $provId,
             "price" => $price,
             "cost" => $cost,
             "stock" => $stock,
