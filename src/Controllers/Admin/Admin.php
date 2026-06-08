@@ -12,6 +12,8 @@
  */
 namespace Controllers\Admin;
 
+use Dao\Mnt\Dashboard as DaoDashboard;
+
 /**
  * Página Principal de Administradores
  *
@@ -39,7 +41,58 @@ class Admin extends \Controllers\PrivateController
      */
     public function run() :void
     {
-        \Views\Renderer::render("admin/admin", array());
+        $user = \Utilities\Security::getUser();
+        $movimientos = [];
+
+        foreach (DaoDashboard::getMovimientosRecientes() as $movimiento) {
+            $movimientos[] = [
+                "movFecha" => date("d/m/Y H:i", strtotime($movimiento["movCreatedAt"])),
+                "invPrdDsc" => $movimiento["invPrdDsc"],
+                "movCantidad" => number_format(floatval($movimiento["movCantidad"]), 0),
+                "movMotivo" => $movimiento["movMotivo"],
+                "movTipoDsc" => self::getMovimientoTipoDsc($movimiento["movTipo"]),
+                "movTipoClass" => self::getMovimientoTipoClass($movimiento["movTipo"])
+            ];
+        }
+
+        $viewData = [
+            "userName" => $user && isset($user["userName"]) ? $user["userName"] : "Usuario",
+            "totalProductos" => number_format(DaoDashboard::getTotalProductosActivos(), 0),
+            "totalStockBajo" => number_format(DaoDashboard::getTotalProductosStockBajo(), 0),
+            "valorInventario" => "L. " . number_format(DaoDashboard::getValorInventarioActivo(), 2),
+            "totalLotesPorVencer" => number_format(DaoDashboard::getTotalLotesPorVencer(), 0),
+            "MovimientosRecientes" => $movimientos
+        ];
+
+        \Views\Renderer::render("admin/admin", $viewData);
+    }
+
+    private static function getMovimientoTipoDsc($tipo)
+    {
+        switch ($tipo) {
+            case "ENT":
+                return "Entrada";
+            case "SAL":
+                return "Salida";
+            case "MER":
+                return "Merma";
+            default:
+                return "Movimiento";
+        }
+    }
+
+    private static function getMovimientoTipoClass($tipo)
+    {
+        switch ($tipo) {
+            case "ENT":
+                return "dash-badge--entry";
+            case "SAL":
+                return "dash-badge--exit";
+            case "MER":
+                return "dash-badge--loss";
+            default:
+                return "dash-badge--neutral";
+        }
     }
 }
 ?>
