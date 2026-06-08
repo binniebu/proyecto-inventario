@@ -26,7 +26,16 @@ class Nav {
             );
         }
 
-        // 3. Kardex (Movimientos)
+        // 3. Proveedores
+        if (\Utilities\Security::isAuthorized($userID, "Controllers\\Mnt\\Proveedores")) {
+            $tmpNAVIGATION[] = array(
+                "nav_url" => "index.php?page=mnt_proveedores",
+                "nav_label" => "Proveedores",
+                "nav_icon" => "fas fa-truck"
+            );
+        }
+
+        // 4. Kardex (Movimientos)
         if (\Utilities\Security::isAuthorized($userID, "Controllers\\Mnt\\Kardex")) {
             $tmpNAVIGATION[] = array(
                 "nav_url" => "index.php?page=mnt_kardex",
