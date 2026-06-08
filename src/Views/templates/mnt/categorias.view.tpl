@@ -54,11 +54,18 @@
           <span class="badge {{catest_class}}">{{catest_dsc}}</span>
         </td>
         <td style="text-align: right;">
-          {{if ~CanUpdate}}
-          <a href="index.php?page=mnt_categoria&mode=UPD&catid={{catid}}" class="btn" title="Editar">
-            <i class="fas fa-edit"></i>
-          </a>
-          {{endif ~CanUpdate}}
+          <div style="display: inline-flex; gap: 0.35rem; justify-content: flex-end; align-items: center;">
+            {{if ~CanView}}
+            <a href="index.php?page=mnt_categoria&mode=DSP&catid={{catid}}" class="btn" title="Ver Detalles">
+              <i class="fas fa-eye"></i>
+            </a>
+            {{endif ~CanView}}
+            {{if ~CanUpdate}}
+            <a href="index.php?page=mnt_categoria&mode=UPD&catid={{catid}}" class="btn" title="Editar">
+              <i class="fas fa-edit"></i>
+            </a>
+            {{endif ~CanUpdate}}
+          </div>
         </td>
       </tr>
       {{endfor Categorias}}

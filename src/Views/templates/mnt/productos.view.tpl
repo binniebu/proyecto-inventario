@@ -88,6 +88,11 @@
           </td>
           <td style="text-align: right;">
             <div style="display: inline-flex; gap: 0.35rem; justify-content: flex-end; align-items: center;">
+              {{if ~CanView}}
+              <a href="index.php?page=mnt_producto&mode=DSP&id={{invPrdId}}&catid={{catid}}" class="btn" title="Ver Detalles">
+                <i class="fas fa-eye"></i>
+              </a>
+              {{endif ~CanView}}
               {{if ~CanUpdate}}
               <button type="button" class="btn btn-ajuste-stock" data-id="{{invPrdId}}" data-name="{{invPrdDsc}}" data-stock="{{invPrdStock}}" data-stockmin="{{invPrdStockMin}}" data-lotes='{{lotes_json}}' title="Ajustar Inventario">
                 <i class="fas fa-exchange-alt"></i>

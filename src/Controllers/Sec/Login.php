@@ -11,6 +11,10 @@ class Login extends \Controllers\PublicController
 
     public function run() :void
     {
+        if (\Utilities\Security::isLogged()) {
+            \Utilities\Site::redirectTo("index.php");
+        }
+
         if ($this->isPostBack()) {
             $this->txtEmail = $_POST["txtEmail"];
             $this->txtPswd = $_POST["txtPswd"];

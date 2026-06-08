@@ -164,3 +164,62 @@ INSERT INTO `roles_usuarios` (`usercod`, `rolescod`, `roleuserest`, `roleuserfch
 (1, 'PRP', 'ACT', NOW(), DATE_ADD(NOW(), INTERVAL 365 DAY)),
 (2, 'ADM', 'ACT', NOW(), DATE_ADD(NOW(), INTERVAL 365 DAY)),
 (3, 'AUD', 'ACT', NOW(), DATE_ADD(NOW(), INTERVAL 365 DAY));
+
+
+-- 6. PERMISOS Y FUNCIONES POR ROL
+-- Catálogo de Funciones
+INSERT INTO `funciones` (`fncod`, `fndsc`, `fnest`, `fntyp`) VALUES
+('Controllers\\Admin\\Admin', 'Dashboard Principal', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Productos', 'Listado de Productos', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Producto', 'Formulario de Producto', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Producto\\New', 'Crear Producto', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Producto\\Upd', 'Editar Producto', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Producto\\Dsp', 'Ver Producto', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Categorias', 'Listado de Categorías', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Categoria', 'Formulario de Categoría', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Categoria\\New', 'Crear Categoría', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Categoria\\Upd', 'Editar Categoría', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Categoria\\Dsp', 'Ver Categoría', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Kardex', 'Historial Kardex', 'ACT', 'CTR'),
+('Controllers\\Sec\\Perfil', 'Perfil de Usuario', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Proveedores', 'Listado de Proveedores', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Proveedor', 'Formulario de Proveedor', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Proveedor\\New', 'Crear Proveedor', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Proveedor\\Upd', 'Editar Proveedor', 'ACT', 'CTR'),
+('Controllers\\Mnt\\Proveedor\\Dsp', 'Ver Proveedor', 'ACT', 'CTR');
+
+-- Permisos del Administrador / Empleado (ADM)
+INSERT INTO `funciones_roles` (`rolescod`, `fncod`, `fnrolest`, `fnexp`) VALUES
+('ADM', 'Controllers\\Admin\\Admin', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Productos', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Producto', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Producto\\New', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Producto\\Upd', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Producto\\Dsp', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Categorias', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Categoria', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Categoria\\New', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Categoria\\Upd', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Categoria\\Dsp', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Kardex', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Sec\\Perfil', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Proveedores', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Proveedor', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Proveedor\\New', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Proveedor\\Upd', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('ADM', 'Controllers\\Mnt\\Proveedor\\Dsp', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR));
+
+-- Permisos del Auditor de Solo Lectura (AUD)
+INSERT INTO `funciones_roles` (`rolescod`, `fncod`, `fnrolest`, `fnexp`) VALUES
+('AUD', 'Controllers\\Admin\\Admin', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('AUD', 'Controllers\\Mnt\\Productos', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('AUD', 'Controllers\\Mnt\\Producto', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('AUD', 'Controllers\\Mnt\\Producto\\Dsp', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('AUD', 'Controllers\\Mnt\\Categorias', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('AUD', 'Controllers\\Mnt\\Categoria', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('AUD', 'Controllers\\Mnt\\Categoria\\Dsp', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('AUD', 'Controllers\\Mnt\\Kardex', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('AUD', 'Controllers\\Sec\\Perfil', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('AUD', 'Controllers\\Mnt\\Proveedores', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('AUD', 'Controllers\\Mnt\\Proveedor', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR)),
+('AUD', 'Controllers\\Mnt\\Proveedor\\Dsp', 'ACT', DATE_ADD(NOW(), INTERVAL 1 YEAR));

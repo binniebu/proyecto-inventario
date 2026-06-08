@@ -77,6 +77,16 @@ class Producto extends PrivateController
             Site::redirectToWithMsg("index.php?page=mnt_productos", "¡Acción no permitida!");
         }
 
+        if ($this->mode === "INS" && !self::isFeatureAutorized("Controllers\\Mnt\\Producto\\New")) {
+            Site::redirectToWithMsg("index.php?page=mnt_productos", "¡No tiene permisos para realizar esta acción!");
+        }
+        if ($this->mode === "UPD" && !self::isFeatureAutorized("Controllers\\Mnt\\Producto\\Upd")) {
+            Site::redirectToWithMsg("index.php?page=mnt_productos", "¡No tiene permisos para realizar esta acción!");
+        }
+        if ($this->mode === "DSP" && !self::isFeatureAutorized("Controllers\\Mnt\\Producto\\Dsp")) {
+            Site::redirectToWithMsg("index.php?page=mnt_productos", "¡No tiene permisos para realizar esta acción!");
+        }
+
         if ($this->mode !== "INS") {
             $dbProduct = DaoProductos::getProductoByCode($this->id);
             if (!$dbProduct) {
