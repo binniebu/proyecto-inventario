@@ -1,3 +1,5 @@
+-- Modulo de proveedores para bases de datos ya existentes.
+
 CREATE TABLE IF NOT EXISTS `proveedores` (
   `provId` bigint(10) NOT NULL AUTO_INCREMENT,
   `provNombre` varchar(100) NOT NULL COMMENT 'Nombre de la empresa',
@@ -63,4 +65,3 @@ WHERE r.rolescod IN ('PRP', 'ADM', 'AUD')
     'Controllers\\Mnt\\Proveedor\\Upd',
     'Controllers\\Mnt\\Proveedor\\Dsp'
   );
-

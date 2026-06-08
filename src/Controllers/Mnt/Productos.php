@@ -31,9 +31,6 @@ class Productos extends PrivateController
         // Handle stock adjustment POSTback
         if ($this->isPostBack()) {
             if (isset($_POST["action"]) && $_POST["action"] === "ajuste_stock") {
-                if (!self::isFeatureAutorized("Controllers\\Mnt\\Producto\\Upd")) {
-                    \Utilities\Site::redirectToWithMsg("index.php?page=mnt_productos", "¡No tiene permisos para realizar esta acción!");
-                }
                 $prdId = isset($_POST["invPrdId"]) ? intval($_POST["invPrdId"]) : 0;
                 $tipo = isset($_POST["ajuste_tipo"]) ? $_POST["ajuste_tipo"] : "";
                 $cantidad = isset($_POST["ajuste_cantidad"]) ? intval($_POST["ajuste_cantidad"]) : 0;
@@ -100,7 +97,8 @@ class Productos extends PrivateController
                     $prod["invPrdStockMin"],
                     $prod["invPrdTip"],
                     $prod["invPrdEst"],
-                    $userId
+                    $userId,
+                    isset($prod["provId"]) ? intval($prod["provId"]) : 0
                 );
 
                 if ($updateResult) {

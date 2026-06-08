@@ -1,0 +1,43 @@
+MODULO AGREGADO: PROVEEDORES
+
+1. Base de datos
+   - Se agrego el script docs/scripts/07_proveedores.sql.
+   - Crea la tabla proveedores si no existe.
+   - Agrega el campo productos.provId si no existe.
+   - Agrega la llave foranea fk_prod_prov si no existe.
+   - Siembra permisos en funciones y funciones_roles para PRP, ADM y AUD.
+
+2. DAO
+   - Se agrego src/Dao/Mnt/Proveedores.php.
+   - Incluye listar, buscar por ID, buscar por nombre, crear, actualizar e inactivar proveedores.
+   - Se modifico src/Dao/Mnt/Productos.php.
+   - Agrega getProveedoresActivos().
+   - newProducto() y updateProducto() ahora guardan provId.
+
+3. Controladores
+   - Se agrego src/Controllers/Mnt/Proveedores.php.
+   - Muestra el listado de proveedores con estados y permisos.
+   - Se agrego src/Controllers/Mnt/Proveedor.php.
+   - Maneja crear, editar y ver proveedor.
+   - Valida nombre obligatorio, longitud, correo valido y duplicados.
+   - Se modifico src/Controllers/Mnt/Producto.php.
+   - Carga proveedores activos para el formulario de producto.
+   - Recibe provId enviado desde el formulario.
+   - Se modifico src/Controllers/Mnt/Productos.php.
+   - Conserva el provId del producto al registrar ajustes de stock.
+
+4. Vistas
+   - Se agrego src/Views/templates/mnt/proveedores.view.tpl.
+   - Pantalla de listado con buscador, filtro por estado y paginacion.
+   - Se agrego src/Views/templates/mnt/proveedor.view.tpl.
+   - Formulario de proveedor para crear, editar y consultar.
+   - Se modifico src/Views/templates/mnt/producto.view.tpl.
+   - Agrega buscador autocompletable de proveedor y campo oculto provId.
+
+5. Menu lateral
+   - Se modifico src/Utilities/Nav.php.
+   - Agrega la opcion Proveedores con icono fas fa-truck.
+   - Ruta: index.php?page=mnt_proveedores
+
+IMPORTANTE
+Ejecutar docs/scripts/07_proveedores.sql en la base de datos antes de probar el modulo.
