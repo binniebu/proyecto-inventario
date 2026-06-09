@@ -45,6 +45,13 @@
     </select>
   </div>
 
+  <div class="form_field" style="position: relative;">
+    <label for="provBuscar">Proveedor</label>
+    <input type="text" id="provBuscar" name="provBuscar" value="{{provNombre}}" {{readonly}} autocomplete="off" placeholder="Escribe para buscar proveedor..." />
+    <input type="hidden" name="provId" id="provId" value="{{provId}}" />
+    <div id="proveedor-resultados" style="border: 1px solid #cbd5e1; border-radius: 6px; max-height: 180px; overflow-y: auto; display: none; background: #ffffff; position: absolute; left: 0; right: 0; z-index: 1000; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin-top: 2px;"></div>
+  </div>
+
   <div class="form_row">
     <div class="form_field">
       <label for="invPrdPrecioVenta">Precio de Venta *</label>
@@ -117,6 +124,77 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function() {
+    var proveedoresData = {{proveedores_json}};
+    var provBuscar = document.getElementById("provBuscar");
+    var provId = document.getElementById("provId");
+    var proveedorResultados = document.getElementById("proveedor-resultados");
+
+    function hideProveedorResultados() {
+      if (proveedorResultados) {
+        proveedorResultados.style.display = "none";
+      }
+    }
+
+    function renderProveedorResultados(matches) {
+      if (!proveedorResultados) return;
+      proveedorResultados.innerHTML = "";
+
+      if (matches.length === 0) {
+        hideProveedorResultados();
+        return;
+      }
+
+      matches.forEach(function(prov) {
+        var item = document.createElement("div");
+        item.style.padding = "0.75rem";
+        item.style.borderBottom = "1px solid #f1f5f9";
+        item.style.cursor = "pointer";
+        item.style.textAlign = "left";
+        item.style.fontSize = "0.9rem";
+        item.textContent = prov.provNombre;
+
+        item.addEventListener("mouseover", function() {
+          item.style.background = "#f8fafc";
+        });
+        item.addEventListener("mouseout", function() {
+          item.style.background = "#ffffff";
+        });
+        item.addEventListener("click", function() {
+          if (provBuscar) provBuscar.value = prov.provNombre;
+          if (provId) provId.value = prov.provId;
+          hideProveedorResultados();
+        });
+
+        proveedorResultados.appendChild(item);
+      });
+
+      proveedorResultados.style.display = "block";
+    }
+
+    if (provBuscar && provId && proveedorResultados && !provBuscar.hasAttribute("readonly")) {
+      provBuscar.addEventListener("input", function() {
+        var query = provBuscar.value.trim().toLowerCase();
+        provId.value = "";
+
+        if (query.length === 0) {
+          hideProveedorResultados();
+          return;
+        }
+
+        var matches = proveedoresData.filter(function(prov) {
+          return prov.provNombre.toLowerCase().indexOf(query) > -1;
+        }).slice(0, 8);
+
+        renderProveedorResultados(matches);
+      });
+
+      document.addEventListener("click", function(e) {
+        if (e.target !== provBuscar && e.target.parentNode !== proveedorResultados) {
+          hideProveedorResultados();
+        }
+      });
+    }
+
     var btnCancelar = document.getElementById("btn-cancelar");
     if (btnCancelar) {
       btnCancelar.addEventListener("click", function() {
