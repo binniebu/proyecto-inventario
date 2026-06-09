@@ -25,26 +25,18 @@ use Exception;
 
 class Security extends \Dao\Table
 {
-    static public function getUsuarios($filter = "", $page = -1, $items = 0)
+    static public function getUsuarios($filter = "", $params = [], $page = -1, $items = 0)
     {
-        $sqlstr = "";
-        if ($filter == "" && $page == -1 && $items == 0) {
-            $sqlstr = "SELECT * FROM usuario;";
-        } else {
-            //TODO: Terminar consultas FACET
-            if ($page = -1 and $items = 0) {
-                $sqlstr = sprintf("SELECT * FROM usuarios %s;", $filter);
-            } else {
-                $offset = ($page -1 * $items);
-                $sqlstr = sprintf(
-                    "SELECT * FROM usuarios %s limit %d, %d;",
-                    $filter,
-                    $offset,
-                    $items
-                );
-            }
+        $sqlstr = "SELECT * FROM usuario";
+        if (!empty($filter)) {
+            $sqlstr .= " WHERE " . $filter;
         }
-        return self::obtenerRegistros($sqlstr, array());
+        if ($page !== -1 && $items > 0) {
+            $offset = ($page - 1) * $items;
+            $sqlstr .= sprintf(" LIMIT %d, %d", intval($offset), intval($items));
+        }
+        $sqlstr .= ";";
+        return self::obtenerRegistros($sqlstr, $params);
     }
 
     static public function newUsuario($email, $password, $username = "John Doe", $userest = 'ACT', $usertipo = 'PUBLICO')

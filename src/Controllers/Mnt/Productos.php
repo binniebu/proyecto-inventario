@@ -87,85 +87,105 @@ class Productos extends PrivateController
                     );
                 }
 
-                $userId = \Utilities\Security::getUserId();
-                $updateResult = DaoProductos::updateProducto(
-                    $prdId,
-                    $prod["invPrdBrCod"],
-                    $prod["invPrdCodInt"],
-                    $prod["invPrdDsc"],
-                    $prod["catid"],
-                    $prod["invPrdPrecioVenta"],
-                    $prod["invPrdCosto"],
-                    $newStock,
-                    $prod["invPrdStockMin"],
-                    $prod["invPrdTip"],
-                    $prod["invPrdEst"],
-                    $userId
-                );
-
-                if ($updateResult) {
-                    if ($tipo === "ENT") {
-                        // Entrada por Compra: Crear o actualizar lote
-                        $existingLote = DaoProductos::getLoteByCode($prdId, $loteCod);
-                        if ($existingLote) {
-                            DaoProductos::incrementarLote($existingLote["loteId"], $cantidad);
-                            $loteId = $existingLote["loteId"];
-                        } else {
-                            DaoProductos::registrarLote($prdId, $loteCod, $cantidad, $loteFechaVencimiento, $prod["invPrdCosto"]);
-                            $loteResult = DaoProductos::getLoteByCode($prdId, $loteCod);
-                            $loteId = $loteResult ? $loteResult["loteId"] : null;
-                        }
-                        DaoProductos::registrarMovimiento($prdId, $tipo, $cantidad, $motivo, $userId, $loteId);
-                    } else {
-                        // Salida/Merma: Descontar de lote específico o aplicar PEPS
-                        if (!empty($loteCod)) {
-                            $existingLote = DaoProductos::getLoteByCode($prdId, $loteCod);
-                            if (!$existingLote || $existingLote["loteEst"] !== "ACT" || intval($existingLote["loteCantActual"]) <= 0) {
-                                \Utilities\Site::redirectToWithMsg($redirectUrl, "¡Error: El lote seleccionado no existe o no cuenta con stock activo!");
-                            }
-                            $cantActual = intval($existingLote["loteCantActual"]);
-                            if ($cantActual < $cantidad) {
-                                \Utilities\Site::redirectToWithMsg($redirectUrl, "¡Error: El lote seleccionado (" . $loteCod . ") solo cuenta con " . $cantActual . " unidades!");
-                            }
-                            DaoProductos::actualizarCantidadLote($existingLote["loteId"], $cantActual - $cantidad);
-                            DaoProductos::registrarMovimiento($prdId, $tipo, $cantidad, $motivo, $userId, $existingLote["loteId"]);
-                        } else {
-                            // Salida/Merma: Descontar de lotes activos usando PEPS (FIFO)
-                            $lotes = DaoProductos::getLotesActivos($prdId);
-                            $cantRestante = $cantidad;
-                            foreach ($lotes as $lote) {
-                                if ($cantRestante <= 0) {
-                                    break;
-                                }
-                                $loteId = intval($lote["loteId"]);
-                                $cantActual = intval($lote["loteCantActual"]);
-
-                                if ($cantActual >= $cantRestante) {
-                                    DaoProductos::actualizarCantidadLote($loteId, $cantActual - $cantRestante);
-                                    DaoProductos::registrarMovimiento($prdId, $tipo, $cantRestante, $motivo, $userId, $loteId);
-                                    $cantRestante = 0;
-                                } else {
-                                    DaoProductos::actualizarCantidadLote($loteId, 0);
-                                    DaoProductos::registrarMovimiento($prdId, $tipo, $cantActual, $motivo, $userId, $loteId);
-                                    $cantRestante -= $cantActual;
-                                }
-                            }
-
-                            // Registro de excedente si hay desfase
-                            if ($cantRestante > 0) {
-                                DaoProductos::registrarMovimiento($prdId, $tipo, $cantRestante, $motivo, $userId, null);
-                            }
-                        }
+                // Validar lote para salidas/mermas antes de iniciar cualquier transacción o modificación en la base de datos
+                $existingLote = null;
+                if ($tipo !== "ENT" && !empty($loteCod)) {
+                    $existingLote = DaoProductos::getLoteByCode($prdId, $loteCod);
+                    if (!$existingLote || $existingLote["loteEst"] !== "ACT" || intval($existingLote["loteCantActual"]) <= 0) {
+                        \Utilities\Site::redirectToWithMsg($redirectUrl, "¡Error: El lote seleccionado no existe o no cuenta con stock activo!");
                     }
+                    $cantActual = intval($existingLote["loteCantActual"]);
+                    if ($cantActual < $cantidad) {
+                        \Utilities\Site::redirectToWithMsg($redirectUrl, "¡Error: El lote seleccionado (" . $loteCod . ") solo cuenta con " . $cantActual . " unidades!");
+                    }
+                }
 
-                    \Utilities\Site::redirectToWithMsg(
-                        $redirectUrl,
-                        "¡Ajuste de stock registrado exitosamente!"
+                $userId = \Utilities\Security::getUserId();
+                $conn = \Dao\Dao::getConn();
+                $conn->beginTransaction();
+
+                try {
+                    $updateResult = DaoProductos::updateProducto(
+                        $prdId,
+                        $prod["invPrdBrCod"],
+                        $prod["invPrdCodInt"],
+                        $prod["invPrdDsc"],
+                        $prod["catid"],
+                        $prod["invPrdPrecioVenta"],
+                        $prod["invPrdCosto"],
+                        $newStock,
+                        $prod["invPrdStockMin"],
+                        $prod["invPrdTip"],
+                        $prod["invPrdEst"],
+                        $userId,
+                        isset($prod["provId"]) ? intval($prod["provId"]) : 0
                     );
-                } else {
+
+                    if ($updateResult) {
+                        if ($tipo === "ENT") {
+                            // Entrada por Compra: Crear o actualizar lote
+                            $existingLoteEnt = DaoProductos::getLoteByCode($prdId, $loteCod);
+                            if ($existingLoteEnt) {
+                                DaoProductos::incrementarLote($existingLoteEnt["loteId"], $cantidad);
+                                $loteId = $existingLoteEnt["loteId"];
+                            } else {
+                                DaoProductos::registrarLote($prdId, $loteCod, $cantidad, $loteFechaVencimiento, $prod["invPrdCosto"]);
+                                $loteResult = DaoProductos::getLoteByCode($prdId, $loteCod);
+                                $loteId = $loteResult ? $loteResult["loteId"] : null;
+                            }
+                            DaoProductos::registrarMovimiento($prdId, $tipo, $cantidad, $motivo, $userId, $loteId);
+                        } else {
+                            // Salida/Merma: Descontar de lote específico o aplicar PEPS
+                            if ($existingLote !== null) {
+                                $cantActual = intval($existingLote["loteCantActual"]);
+                                DaoProductos::actualizarCantidadLote($existingLote["loteId"], $cantActual - $cantidad);
+                                DaoProductos::registrarMovimiento($prdId, $tipo, $cantidad, $motivo, $userId, $existingLote["loteId"]);
+                            } else {
+                                // Salida/Merma: Descontar de lotes activos usando PEPS (FIFO)
+                                $lotes = DaoProductos::getLotesActivos($prdId);
+                                $cantRestante = $cantidad;
+                                foreach ($lotes as $lote) {
+                                    if ($cantRestante <= 0) {
+                                        break;
+                                    }
+                                    $loteId = intval($lote["loteId"]);
+                                    $cantActual = intval($lote["loteCantActual"]);
+
+                                    if ($cantActual >= $cantRestante) {
+                                        DaoProductos::actualizarCantidadLote($loteId, $cantActual - $cantRestante);
+                                        DaoProductos::registrarMovimiento($prdId, $tipo, $cantRestante, $motivo, $userId, $loteId);
+                                        $cantRestante = 0;
+                                    } else {
+                                        DaoProductos::actualizarCantidadLote($loteId, 0);
+                                        DaoProductos::registrarMovimiento($prdId, $tipo, $cantActual, $motivo, $userId, $loteId);
+                                        $cantRestante -= $cantActual;
+                                    }
+                                }
+
+                                // Registro de excedente si hay desfase
+                                if ($cantRestante > 0) {
+                                    DaoProductos::registrarMovimiento($prdId, $tipo, $cantRestante, $motivo, $userId, null);
+                                }
+                            }
+                        }
+
+                        $conn->commit();
+                        \Utilities\Site::redirectToWithMsg(
+                            $redirectUrl,
+                            "¡Ajuste de stock registrado exitosamente!"
+                        );
+                    } else {
+                        $conn->rollBack();
+                        \Utilities\Site::redirectToWithMsg(
+                            $redirectUrl,
+                            "¡Error al actualizar el inventario!"
+                        );
+                    }
+                } catch (\Exception $ex) {
+                    $conn->rollBack();
                     \Utilities\Site::redirectToWithMsg(
                         $redirectUrl,
-                        "¡Error al actualizar el inventario!"
+                        "¡Ocurrió un error inesperado al procesar el ajuste: " . $ex->getMessage() . "!"
                     );
                 }
             }

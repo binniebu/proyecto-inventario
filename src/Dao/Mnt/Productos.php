@@ -51,45 +51,57 @@ class Productos extends \Dao\Table
 
     static public function newProducto($barcode, $intcode, $dsc, $catid, $price, $cost, $stock, $stockmin, $type, $est, $userId, $loteCod = "", $loteFechaVencimiento = "", $provId = 0)
     {
-        $sqlins = "INSERT INTO productos (
-            invPrdId, invPrdBrCod, invPrdCodInt, invPrdDsc, catid, 
-            provId, invPrdPrecioVenta, invPrdCosto, invPrdStock, invPrdStockMin, 
-            invPrdTip, invPrdEst, invPrdCreatedBy, invPrdCreatedAt, 
-            invPrdModifiedBy, invPrdModifiedAt
-        ) VALUES (
-            NULL, :barcode, :intcode, :dsc, :catid, 
-            :provId, :price, :cost, :stock, :stockmin, 
-            :type, :est, :userId, NOW(), 
-            :userId, NOW()
-        );";
+        $conn = self::getConn();
+        $conn->beginTransaction();
 
-        $result = self::executeNonQuery($sqlins, [
-            "barcode" => $barcode === "" ? null : $barcode,
-            "intcode" => $intcode === "" ? null : $intcode,
-            "dsc" => $dsc,
-            "catid" => $catid === 0 ? null : $catid,
-            "provId" => $provId === 0 ? null : $provId,
-            "price" => $price,
-            "cost" => $cost,
-            "stock" => $stock,
-            "stockmin" => $stockmin,
-            "type" => $type,
-            "est" => $est,
-            "userId" => $userId
-        ]);
+        try {
+            $sqlins = "INSERT INTO productos (
+                invPrdId, invPrdBrCod, invPrdCodInt, invPrdDsc, catid, 
+                provId, invPrdPrecioVenta, invPrdCosto, invPrdStock, invPrdStockMin, 
+                invPrdTip, invPrdEst, invPrdCreatedBy, invPrdCreatedAt, 
+                invPrdModifiedBy, invPrdModifiedAt
+            ) VALUES (
+                NULL, :barcode, :intcode, :dsc, :catid, 
+                :provId, :price, :cost, :stock, :stockmin, 
+                :type, :est, :userId, NOW(), 
+                :userId, NOW()
+            );";
 
-        if ($result) {
-            $lastId = self::obtenerUnRegistro("SELECT LAST_INSERT_ID() as id;", []);
-            if ($lastId && $stock > 0 && !empty($loteCod)) {
-                $prdId = $lastId["id"];
-                self::registrarLote($prdId, $loteCod, $stock, $loteFechaVencimiento, $cost);
-                $loteResult = self::obtenerUnRegistro("SELECT LAST_INSERT_ID() as id;", []);
-                $loteId = $loteResult ? $loteResult["id"] : null;
-                self::registrarMovimiento($prdId, "ENT", $stock, "Ingreso de stock inicial", $userId, $loteId);
+            $result = self::executeNonQuery($sqlins, [
+                "barcode" => $barcode === "" ? null : $barcode,
+                "intcode" => $intcode === "" ? null : $intcode,
+                "dsc" => $dsc,
+                "catid" => $catid === 0 ? null : $catid,
+                "provId" => $provId === 0 ? null : $provId,
+                "price" => $price,
+                "cost" => $cost,
+                "stock" => $stock,
+                "stockmin" => $stockmin,
+                "type" => $type,
+                "est" => $est,
+                "userId" => $userId
+            ]);
+
+            if ($result) {
+                $lastId = self::obtenerUnRegistro("SELECT LAST_INSERT_ID() as id;", []);
+                if ($lastId && $stock > 0 && !empty($loteCod)) {
+                    $prdId = $lastId["id"];
+                    self::registrarLote($prdId, $loteCod, $stock, $loteFechaVencimiento, $cost);
+                    $loteResult = self::obtenerUnRegistro("SELECT LAST_INSERT_ID() as id;", []);
+                    $loteId = $loteResult ? $loteResult["id"] : null;
+                    self::registrarMovimiento($prdId, "ENT", $stock, "Ingreso de stock inicial", $userId, $loteId);
+                }
+                $conn->commit();
+                return $lastId ? $lastId["id"] : true;
             }
-            return $lastId ? $lastId["id"] : true;
+            
+            $conn->rollBack();
+            return false;
+        } catch (\Exception $ex) {
+            $conn->rollBack();
+            error_log("Error en newProducto: " . $ex->getMessage());
+            return false;
         }
-        return false;
     }
 
     static public function updateProducto($invPrdId, $barcode, $intcode, $dsc, $catid, $price, $cost, $stock, $stockmin, $type, $est, $userId, $provId = 0)
