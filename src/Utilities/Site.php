@@ -22,10 +22,40 @@ class Site
         if (isset($_GET["page"])) {
             $pageRequest = str_replace(array("_", "-", "."), "\\", $_GET["page"]);
         }
+        
+        $resolvedClass = "Controllers\\" . $pageRequest;
+        
+        $allowedPages = array(
+            "controllers\\index",
+            "controllers\\noauth",
+            "controllers\\error",
+            "controllers\\admin\\admin",
+            "controllers\\mnt\\categorias",
+            "controllers\\mnt\\categoria",
+            "controllers\\mnt\\kardex",
+            "controllers\\mnt\\productos",
+            "controllers\\mnt\\producto",
+            "controllers\\mnt\\proveedores",
+            "controllers\\mnt\\proveedor",
+            "controllers\\mnt\\usuarios",
+            "controllers\\mnt\\usuario",
+            "controllers\\sec\\login",
+            "controllers\\sec\\logout",
+            "controllers\\sec\\perfil",
+            "controllers\\sec\\register",
+            "controllers\\checkout\\accept",
+            "controllers\\checkout\\checkout",
+            "controllers\\checkout\\error"
+        );
+
+        $normalizedClass = strtolower($resolvedClass);
+        if (!in_array($normalizedClass, $allowedPages)) {
+            $resolvedClass = "Controllers\\Error";
+        }
+
         Context::setArrayToContext($_GET);
         Context::setContext("request_uri", $_SERVER["REQUEST_URI"]);
-        return "Controllers\\" . $pageRequest;
-        //  \\Controllers\\rpts\\reportusers 
+        return $resolvedClass;
     }
     public static function redirectTo($url)
     {
