@@ -264,6 +264,16 @@ class Security extends \Dao\Table
         );
     }
 
+    static public function updatePassword($usercod, $newPassword)
+    {
+        $hashedPassword = self::_hashPassword($newPassword);
+        $sqlstr = "UPDATE `usuario` SET `userpswd` = :userpswd, `userpswdchg` = NOW() WHERE `usercod` = :usercod;";
+        return self::executeNonQuery($sqlstr, [
+            "userpswd" => $hashedPassword,
+            "usercod" => $usercod
+        ]);
+    }
+
     static public function addRolToUser($userCod, $rolescod)
     {
         $sqlstr = "SELECT * FROM roles_usuarios WHERE usercod = :usercod AND rolescod = :rolescod;";
