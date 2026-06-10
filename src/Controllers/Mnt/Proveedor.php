@@ -109,6 +109,7 @@ class Proveedor extends PrivateController
         $existing = DaoProveedores::getProveedorByName($this->proveedor["provNombre"]);
         if ($existing && ($this->mode === "INS" || intval($existing["provId"]) !== $this->provId)) {
             $this->aErrors[] = "Ya existe un proveedor con este nombre.";
+            $this->proveedor["provNombre"] = "";
         }
 
         if (count($this->aErrors) === 0) {

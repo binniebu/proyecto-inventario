@@ -97,6 +97,7 @@ class Categoria extends PrivateController
         $existing = DaoCategorias::getCategoriaByName($this->categoria["catnom"]);
         if ($existing && ($this->mode === "INS" || $existing["catid"] !== $this->catid)) {
             $this->aErrors[] = "Ya existe una categoría con este nombre.";
+            $this->categoria["catnom"] = "";
         }
 
         if (count($this->aErrors) === 0) {

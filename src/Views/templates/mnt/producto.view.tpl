@@ -74,11 +74,11 @@
     <h3 style="grid-column: 1 / -1; margin-top: 0; margin-bottom: 0.75rem; font-size: 0.95rem; color: #475569; font-weight: 700;">Lote de Inventario Inicial</h3>
     <div class="form_field">
       <label for="loteCod">Código de Lote (Requerido si stock > 0)</label>
-      <input type="text" id="loteCod" name="loteCod" placeholder="Ej. LOTE-01" />
+      <input type="text" id="loteCod" name="loteCod" value="{{loteCod}}" placeholder="Ej. LOTE-01" />
     </div>
     <div class="form_field">
       <label for="loteFechaVencimiento">Fecha de Vencimiento (Opcional)</label>
-      <input type="date" id="loteFechaVencimiento" name="loteFechaVencimiento" />
+      <input type="date" id="loteFechaVencimiento" name="loteFechaVencimiento" value="{{loteFechaVencimiento}}" />
     </div>
   </div>
   {{endif show_lote_fields}}
@@ -134,8 +134,15 @@
           var lote = loteInput.value.trim();
           if (stock > 0 && lote === "") {
             e.preventDefault();
-            alert("¡Error: Debe proporcionar un código de lote si el stock inicial es mayor a cero!");
-            loteInput.focus();
+            Swal.fire({
+              title: "Atención",
+              text: "¡Error: Debe proporcionar un código de lote si el stock inicial es mayor a cero!",
+              icon: "warning",
+              confirmButtonColor: "#10b981",
+              confirmButtonText: "Aceptar"
+            }).then(function() {
+              loteInput.focus();
+            });
             return false;
           }
         }

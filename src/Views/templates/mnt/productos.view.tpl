@@ -393,8 +393,15 @@
 
         if (isNaN(cantidad) || cantidad <= 0) {
           e.preventDefault();
-          alert("¡Error: La cantidad a ajustar debe ser mayor a cero!");
-          if (cantidadInput) cantidadInput.focus();
+          Swal.fire({
+            title: "Atención",
+            text: "¡Error: La cantidad a ajustar debe ser mayor a cero!",
+            icon: "warning",
+            confirmButtonColor: "#10b981",
+            confirmButtonText: "Aceptar"
+          }).then(function() {
+            if (cantidadInput) cantidadInput.focus();
+          });
           return false;
         }
 
@@ -402,8 +409,15 @@
           var newStock = currentStock - cantidad;
           if (newStock < 0) {
             e.preventDefault();
-            alert("¡Error: El stock resultante no puede ser negativo!");
-            if (cantidadInput) cantidadInput.focus();
+            Swal.fire({
+              title: "Atención",
+              text: "¡Error: El stock resultante no puede ser negativo!",
+              icon: "warning",
+              confirmButtonColor: "#10b981",
+              confirmButtonText: "Aceptar"
+            }).then(function() {
+              if (cantidadInput) cantidadInput.focus();
+            });
             return false;
           }
         }

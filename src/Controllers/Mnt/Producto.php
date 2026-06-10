@@ -184,6 +184,7 @@ class Producto extends PrivateController
             $existingBarcode = DaoProductos::getProductoByBarcode($this->product["invPrdBrCod"]);
             if ($existingBarcode && ($this->mode === "INS" || $existingBarcode["invPrdId"] !== $this->id)) {
                 $this->aErrors[] = "El código de barras ya está registrado por otro producto.";
+                $this->product["invPrdBrCod"] = "";
             }
         }
 
@@ -192,6 +193,7 @@ class Producto extends PrivateController
             $existingIntcode = DaoProductos::getProductoByIntcode($this->product["invPrdCodInt"]);
             if ($existingIntcode && ($this->mode === "INS" || $existingIntcode["invPrdId"] !== $this->id)) {
                 $this->aErrors[] = "El código interno institucional ya está registrado por otro producto.";
+                $this->product["invPrdCodInt"] = "";
             }
         }
 

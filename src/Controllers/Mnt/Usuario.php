@@ -115,6 +115,7 @@ class Usuario extends PrivateController
                 $existing = DaoSecurity::getUsuarioByEmail($this->user["useremail"]);
                 if ($existing) {
                     $this->aErrors[] = "Este correo electrónico ya está registrado.";
+                    $this->user["useremail"] = "";
                 }
             }
 
