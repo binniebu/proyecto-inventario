@@ -99,6 +99,35 @@
     z-index: 10;
   }
 
+  /* Mobile Logo Mark */
+  .mobile-logo-mark {
+    display: none;
+    gap: 8px;
+    align-items: center;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 2.5rem;
+    justify-content: center;
+    letter-spacing: 0.05em;
+  }
+
+  .mobile-logo-mark .tri-2 {
+    border-bottom-color: #1e293b !important;
+    opacity: 0.8;
+  }
+
+  .mobile-logo-mark .tri-3 {
+    border-bottom-color: #1e293b !important;
+    opacity: 0.5;
+  }
+
+  @media (max-width: 991px) {
+    .mobile-logo-mark {
+      display: flex;
+    }
+  }
+
   .logo-triangles {
     position: relative;
     width: 36px;
@@ -181,6 +210,12 @@
     color: #1e293b; /* Slate 800 */
     margin: 0 0 2rem 0;
     letter-spacing: -0.02em;
+  }
+
+  @media (max-width: 991px) {
+    .form-container h2 {
+      text-align: center;
+    }
   }
 
   /* Modern Pill Inputs */
@@ -314,22 +349,37 @@
   .login-error-alert {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    background-color: #fef2f2;
-    border: 1px solid #fee2e2;
-    border-left: 4px solid #ef4444;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    color: #991b1b;
-    font-size: 0.85rem;
-    margin-bottom: 1.5rem;
+    gap: 0.65rem;
+    background-color: #fff5f5;
+    border: 1px solid rgba(229, 62, 62, 0.12);
+    border-left: 3px solid #e53e3e;
+    border-radius: 6px;
+    padding: 0.6rem 0.85rem;
+    color: #9b2c2c;
+    font-size: 0.82rem;
+    line-height: 1.35;
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
     text-align: left;
     font-weight: 500;
+    box-shadow: 0 2px 5px rgba(229, 62, 62, 0.03);
+    animation: slideInAlert 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes slideInAlert {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .login-error-alert i {
-    font-size: 1.05rem;
-    color: #ef4444;
+    font-size: 1rem;
+    color: #e53e3e;
     flex-shrink: 0;
   }
 
@@ -382,14 +432,17 @@
   <div class="login-form-panel">
     <div class="form-container">
       
-      <h2>Iniciar Sesión</h2>
-
-      {{if generalError}}
-        <div class="login-error-alert">
-          <i class="fas fa-exclamation-circle"></i>
-          <span>{{generalError}}</span>
+      <!-- Mobile Logo Mark -->
+      <div class="mobile-logo-mark">
+        <div class="logo-triangles">
+          <div class="tri tri-1"></div>
+          <div class="tri tri-2"></div>
+          <div class="tri tri-3"></div>
         </div>
-      {{endif generalError}}
+        <span>Sistema de Inventario</span>
+      </div>
+      
+      <h2>Iniciar Sesión</h2>
 
       <form method="post" action="index.php?page=sec_login{{if redirto}}&redirto={{redirto}}{{endif redirto}}">
         
@@ -417,7 +470,14 @@
           {{endif errorPswd}}
         </div>
 
-        <button class="btn-gradient" id="btnLogin" type="submit" style="margin-top: 1.5rem !important;">Iniciar Sesión</button>
+        {{if generalError}}
+          <div class="login-error-alert">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{generalError}}</span>
+          </div>
+        {{endif generalError}}
+
+        <button class="btn-gradient" id="btnLogin" type="submit" style="margin-top: 1.25rem !important;">Iniciar Sesión</button>
 
       </form>
     </div>
