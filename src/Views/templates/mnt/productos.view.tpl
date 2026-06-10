@@ -92,6 +92,9 @@
               <a href="index.php?page=mnt_producto&mode=DSP&id={{invPrdId}}&catid={{catid}}" class="btn" title="Ver Detalles">
                 <i class="fas fa-eye"></i>
               </a>
+              <button type="button" class="btn btn-ver-lotes" data-name="{{invPrdDsc}}" data-lotes='{{lotes_json}}' title="Ver Lotes Activos">
+                <i class="fas fa-boxes"></i>
+              </button>
               {{endif ~CanView}}
               {{if ~CanUpdate}}
               <button type="button" class="btn btn-ajuste-stock" data-id="{{invPrdId}}" data-name="{{invPrdDsc}}" data-stock="{{invPrdStock}}" data-stockmin="{{invPrdStockMin}}" data-lotes='{{lotes_json}}' title="Ajustar Inventario">
@@ -202,11 +205,56 @@
   </div>
 </div>
 
+<!-- Modal para Visualizar Lotes -->
+<div id="lotes-modal" class="modal_overlay" style="display: none;">
+  <div class="modal_card" style="max-width: 650px; width: 100%;">
+    <div class="modal_header">
+      <h3>Lotes de Inventario Activos</h3>
+      <button type="button" class="close_btn" id="lotes-modal-close-x">&times;</button>
+    </div>
+    <div class="modal_body">
+      <div style="margin-bottom: 1.25rem;">
+        <label style="font-weight: 600; color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Producto</label>
+        <div id="lotes-prd-name" style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-top: 0.25rem;">-</div>
+      </div>
+      
+      <div style="overflow-x: auto; max-height: 300px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 1rem;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+          <thead>
+            <tr style="background-color: #f8fafc; border-bottom: 1px solid #cbd5e1; color: #475569; font-weight: 600;">
+              <th style="padding: 0.75rem 1rem;">Código de Lote</th>
+              <th style="padding: 0.75rem 1rem; text-align: center;">Stock Disponible</th>
+              <th style="padding: 0.75rem 1rem; text-align: center;">Fecha de Ingreso</th>
+              <th style="padding: 0.75rem 1rem; text-align: center;">Fecha de Vencimiento</th>
+            </tr>
+          </thead>
+          <tbody id="lotes-table-body">
+            <!-- Filas dinámicas -->
+          </tbody>
+        </table>
+      </div>
+      <div id="lotes-no-data" style="text-align: center; padding: 2rem; color: #64748b; display: none;">
+        <i class="fas fa-boxes" style="font-size: 2.5rem; margin-bottom: 0.75rem; color: #94a3b8; display: block;"></i>
+        Este producto no cuenta con lotes activos registrados.
+      </div>
+    </div>
+    <div class="modal_footer" style="display: flex; justify-content: flex-end; padding-top: 1rem; border-top: 1px solid #cbd5e1;">
+      <button type="button" id="lotes-modal-btn-cerrar" class="secondary">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     console.log("DOMContentLoaded fired.");
     var searchInput = document.getElementById("prd-search-input");
     var statusSelect = document.getElementById("filter-status");
+
+    var venceDateInput = document.getElementById("ajuste_lote_vence");
+    if (venceDateInput) {
+      var todayStr = new Date().toISOString().split('T')[0];
+      venceDateInput.setAttribute('min', todayStr);
+    }
 
     /* Controles del Modal de Ajuste */
     var lotesData = [];
@@ -405,6 +453,30 @@
           return false;
         }
 
+        if (tipo === "ENT") {
+          var venceInput = document.getElementById("ajuste_lote_vence");
+          if (venceInput && venceInput.value) {
+            var selectedDate = venceInput.value;
+            var today = new Date();
+            today.setHours(0,0,0,0);
+            var parts = selectedDate.split('-');
+            var expDate = new Date(parts[0], parts[1] - 1, parts[2]);
+            if (expDate < today) {
+              e.preventDefault();
+              Swal.fire({
+                title: "Fecha de Vencimiento Inválida",
+                text: "¡Error: La fecha de vencimiento no puede ser anterior a la fecha de hoy!",
+                icon: "warning",
+                confirmButtonColor: "#10b981",
+                confirmButtonText: "Aceptar"
+              }).then(function() {
+                venceInput.focus();
+              });
+              return false;
+            }
+          }
+        }
+
         if (tipo !== "ENT") {
           var newStock = currentStock - cantidad;
           if (newStock < 0) {
@@ -420,6 +492,154 @@
             });
             return false;
           }
+        }
+      });
+    }
+
+    /* Controles de Visualización de Lotes */
+    var lotesModal = document.getElementById("lotes-modal");
+    var lotesPrdName = document.getElementById("lotes-prd-name");
+    var lotesTableBody = document.getElementById("lotes-table-body");
+    var lotesNoData = document.getElementById("lotes-no-data");
+    var lotesCloseX = document.getElementById("lotes-modal-close-x");
+    var lotesCloseBtn = document.getElementById("lotes-modal-btn-cerrar");
+
+    var verLotesBtns = document.querySelectorAll(".btn-ver-lotes");
+    verLotesBtns.forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var name = btn.getAttribute("data-name");
+        var lotesAttr = btn.getAttribute("data-lotes");
+        var lotesList = [];
+        try {
+          lotesList = JSON.parse(lotesAttr || "[]");
+        } catch(ex) {
+          lotesList = [];
+        }
+
+        if (lotesPrdName) lotesPrdName.textContent = name;
+        if (lotesTableBody) lotesTableBody.innerHTML = "";
+
+        if (lotesList.length > 0) {
+          if (lotesTableBody) lotesTableBody.parentElement.parentElement.style.display = "block";
+          if (lotesNoData) lotesNoData.style.display = "none";
+
+          lotesList.forEach(function(lote) {
+            var tr = document.createElement("tr");
+            tr.style.borderBottom = "1px solid #cbd5e1";
+            tr.style.transition = "background-color 0.2s ease";
+            
+            tr.addEventListener("mouseover", function() {
+              tr.style.backgroundColor = "#f1f5f9";
+            });
+            tr.addEventListener("mouseout", function() {
+              tr.style.backgroundColor = "";
+            });
+
+            /* Codigo */
+            var tdCod = document.createElement("td");
+            tdCod.style.padding = "0.75rem 1rem";
+            tdCod.style.fontWeight = "600";
+            tdCod.style.color = "#334155";
+            tdCod.textContent = lote.loteCod;
+            tr.appendChild(tdCod);
+
+            /* Cantidad */
+            var tdCant = document.createElement("td");
+            tdCant.style.padding = "0.75rem 1rem";
+            tdCant.style.textAlign = "center";
+            var spanCant = document.createElement("span");
+            spanCant.style.display = "inline-block";
+            spanCant.style.padding = "0.25rem 0.5rem";
+            spanCant.style.borderRadius = "4px";
+            spanCant.style.fontSize = "0.8rem";
+            spanCant.style.fontWeight = "700";
+            spanCant.style.backgroundColor = "#d1fae5";
+            spanCant.style.color = "#065f46";
+            spanCant.textContent = lote.loteCantActual + " uds";
+            tdCant.appendChild(spanCant);
+            tr.appendChild(tdCant);
+
+            /* Fecha Ingreso */
+            var tdIng = document.createElement("td");
+            tdIng.style.padding = "0.75rem 1rem";
+            tdIng.style.textAlign = "center";
+            tdIng.style.color = "#64748b";
+            tdIng.textContent = lote.loteFechaIngreso || "N/A";
+            tr.appendChild(tdIng);
+
+            /* Fecha Vencimiento */
+            var tdVence = document.createElement("td");
+            tdVence.style.padding = "0.75rem 1rem";
+            tdVence.style.textAlign = "center";
+            var spanVence = document.createElement("span");
+            spanVence.style.display = "inline-block";
+            spanVence.style.padding = "0.25rem 0.5rem";
+            spanVence.style.borderRadius = "4px";
+            spanVence.style.fontSize = "0.8rem";
+            spanVence.style.fontWeight = "600";
+            
+            var venceStr = lote.loteFechaVencimiento || "Sin Vencer";
+            if (venceStr === "Sin Vencer") {
+              spanVence.style.backgroundColor = "#f1f5f9";
+              spanVence.style.color = "#475569";
+            } else {
+              /* Parse date in format DD/MM/YYYY */
+              var parts = venceStr.split('/');
+              if (parts.length === 3) {
+                var expDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                var today = new Date();
+                today.setHours(0,0,0,0);
+                
+                var diffTime = expDate - today;
+                var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays < 0) {
+                  spanVence.style.backgroundColor = "#fee2e2";
+                  spanVence.style.color = "#991b1b";
+                } else if (diffDays <= 30) {
+                  spanVence.style.backgroundColor = "#fef3c7";
+                  spanVence.style.color = "#92400e";
+                } else {
+                  spanVence.style.backgroundColor = "#e0f2fe";
+                  spanVence.style.color = "#075985";
+                }
+              } else {
+                spanVence.style.backgroundColor = "#f1f5f9";
+                spanVence.style.color = "#475569";
+              }
+            }
+            spanVence.textContent = venceStr;
+            tdVence.appendChild(spanVence);
+            tr.appendChild(tdVence);
+
+            lotesTableBody.appendChild(tr);
+          });
+        } else {
+          if (lotesTableBody) lotesTableBody.parentElement.parentElement.style.display = "none";
+          if (lotesNoData) lotesNoData.style.display = "block";
+        }
+
+        if (lotesModal) {
+          lotesModal.style.display = "flex";
+          document.body.style.overflow = "hidden";
+        }
+      });
+    });
+
+    var closeLotesModal = function() {
+      if (lotesModal) {
+        lotesModal.style.display = "none";
+        document.body.style.overflow = "";
+      }
+    };
+
+    if (lotesCloseX) lotesCloseX.addEventListener("click", closeLotesModal);
+    if (lotesCloseBtn) lotesCloseBtn.addEventListener("click", closeLotesModal);
+
+    if (lotesModal) {
+      lotesModal.addEventListener("click", function(e) {
+        if (e.target === lotesModal) {
+          closeLotesModal();
         }
       });
     }

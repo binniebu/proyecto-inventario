@@ -124,11 +124,19 @@
       });
     }
 
+    var dateInput = document.getElementById("loteFechaVencimiento");
+    if (dateInput) {
+      var todayStr = new Date().toISOString().split('T')[0];
+      dateInput.setAttribute('min', todayStr);
+    }
+
     var form = document.querySelector("form");
     if (form) {
       form.addEventListener("submit", function(e) {
         var stockInput = document.getElementById("invPrdStock");
         var loteInput = document.getElementById("loteCod");
+        var vencimientoInput = document.getElementById("loteFechaVencimiento");
+
         if (stockInput && loteInput) {
           var stock = parseInt(stockInput.value, 10) || 0;
           var lote = loteInput.value.trim();
@@ -142,6 +150,27 @@
               confirmButtonText: "Aceptar"
             }).then(function() {
               loteInput.focus();
+            });
+            return false;
+          }
+        }
+
+        if (vencimientoInput && vencimientoInput.value) {
+          var selectedDate = vencimientoInput.value;
+          var today = new Date();
+          today.setHours(0,0,0,0);
+          var parts = selectedDate.split('-');
+          var expDate = new Date(parts[0], parts[1] - 1, parts[2]);
+          if (expDate < today) {
+            e.preventDefault();
+            Swal.fire({
+              title: "Fecha de Vencimiento Inválida",
+              text: "¡Error: La fecha de vencimiento no puede ser anterior a la fecha de hoy!",
+              icon: "warning",
+              confirmButtonColor: "#10b981",
+              confirmButtonText: "Aceptar"
+            }).then(function() {
+              vencimientoInput.focus();
             });
             return false;
           }

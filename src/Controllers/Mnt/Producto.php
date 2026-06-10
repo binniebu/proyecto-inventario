@@ -157,6 +157,14 @@ class Producto extends PrivateController
             $this->aErrors[] = "Debe proporcionar un código de lote si el stock inicial es mayor a cero.";
         }
 
+        if ($this->mode === "INS" && !empty($loteFechaVencimiento)) {
+            $today = date("Y-m-d");
+            if ($loteFechaVencimiento < $today) {
+                $this->aErrors[] = "La fecha de vencimiento del lote no puede ser anterior a la fecha actual (" . date("d/m/Y") . ").";
+                $this->product["loteFechaVencimiento"] = "";
+            }
+        }
+
         // Validaciones de consistencia de estado y stock físico
         if ($this->selectedEst === "DIS") {
             if ($newStock <= $this->product["invPrdStockMin"]) {

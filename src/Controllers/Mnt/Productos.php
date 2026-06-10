@@ -72,6 +72,13 @@ class Productos extends PrivateController
                     \Utilities\Site::redirectToWithMsg($redirectUrl, "¡Error: El código de lote es obligatorio para entradas!");
                 }
 
+                if ($tipo === "ENT" && !empty($loteFechaVencimiento)) {
+                    $today = date("Y-m-d");
+                    if ($loteFechaVencimiento < $today) {
+                        \Utilities\Site::redirectToWithMsg($redirectUrl, "¡Error: La fecha de vencimiento del lote no puede ser anterior a la fecha actual (" . date("d/m/Y") . ")!");
+                    }
+                }
+
                 $currentStock = intval($prod["invPrdStock"]);
                 $newStock = $currentStock;
                 if ($tipo === "ENT") {
@@ -230,7 +237,9 @@ class Productos extends PrivateController
                     foreach ($lotes as $l) {
                         $lotesArr[] = [
                             "loteCod" => $l["loteCod"],
-                            "loteCantActual" => intval($l["loteCantActual"])
+                            "loteCantActual" => intval($l["loteCantActual"]),
+                            "loteFechaVencimiento" => $l["loteFechaVencimiento"] ? date("d/m/Y", strtotime($l["loteFechaVencimiento"])) : "Sin Vencer",
+                            "loteFechaIngreso" => date("d/m/Y", strtotime($l["loteFechaIngreso"]))
                         ];
                     }
                     $prod["lotes_json"] = json_encode($lotesArr);
