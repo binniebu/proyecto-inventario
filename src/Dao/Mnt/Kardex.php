@@ -34,10 +34,12 @@ class Kardex extends \Dao\Table
                     m.movCreatedBy,
                     p.invPrdBrCod, 
                     p.invPrdDsc,
-                    u.username
+                    u.username,
+                    l.loteCod
                 FROM movimientos_inventario m
                 INNER JOIN productos p ON m.invPrdId = p.invPrdId
                 INNER JOIN usuario u ON m.movCreatedBy = u.usercod
+                LEFT JOIN lotes_inventario l ON m.loteId = l.loteId
                 WHERE 1 = 1";
 
         $params = [];
