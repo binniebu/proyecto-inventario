@@ -45,6 +45,7 @@
     </select>
   </div>
 
+  {{if show_price_cost_fields}}
   <div class="form_row">
     <div class="form_field">
       <label for="invPrdPrecioVenta">Precio de Venta *</label>
@@ -56,6 +57,7 @@
       <input type="number" step="0.01" min="0.00" id="invPrdCosto" name="invPrdCosto" value="{{invPrdCosto}}" required {{readonly}} placeholder="0.00" style="text-align: right;" />
     </div>
   </div>
+  {{endif show_price_cost_fields}}
 
   <div class="form_row">
     <div class="form_field">

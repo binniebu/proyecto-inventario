@@ -4,11 +4,12 @@ nav#menu {
   width: 280px;
   margin-top: 52px;
   bottom: 0px;
-  height: ~"calc(100% - 52px)";
+  height: ~"calc(100vh - 52px)";
   transform: translateX(-280px);
   background-color: @primary_bg300; /* Sidebar más claro que el header */
   transition: transform 250ms ease-in-out;
   z-index: 1000;
+  overflow-y: auto;
   
   /* Flexbox moderno */
   display: flex;

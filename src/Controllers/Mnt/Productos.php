@@ -68,14 +68,32 @@ class Productos extends PrivateController
                 $loteCod = isset($_POST["ajuste_lote_cod"]) ? trim($_POST["ajuste_lote_cod"]) : "";
                 $loteFechaVencimiento = isset($_POST["ajuste_lote_vence"]) ? trim($_POST["ajuste_lote_vence"]) : "";
 
-                if ($tipo === "ENT" && empty($loteCod)) {
-                    \Utilities\Site::redirectToWithMsg($redirectUrl, "¡Error: El código de lote es obligatorio para entradas!");
-                }
+                $precio = floatval($prod["invPrdPrecioVenta"]);
+                $costo = floatval($prod["invPrdCosto"]);
 
-                if ($tipo === "ENT" && !empty($loteFechaVencimiento)) {
-                    $today = date("Y-m-d");
-                    if ($loteFechaVencimiento < $today) {
-                        \Utilities\Site::redirectToWithMsg($redirectUrl, "¡Error: La fecha de vencimiento del lote no puede ser anterior a la fecha actual (" . date("d/m/Y") . ")!");
+                if ($tipo === "ENT") {
+                    if (empty($loteCod)) {
+                        \Utilities\Site::redirectToWithMsg($redirectUrl, "¡Error: El código de lote es obligatorio para entradas!");
+                    }
+
+                    if (!empty($loteFechaVencimiento)) {
+                        $today = date("Y-m-d");
+                        if ($loteFechaVencimiento < $today) {
+                            \Utilities\Site::redirectToWithMsg($redirectUrl, "¡Error: La fecha de vencimiento del lote no puede ser anterior a la fecha actual (" . date("d/m/Y") . ")!");
+                        }
+                    }
+
+                    $precio = isset($_POST["ajuste_precio"]) ? floatval($_POST["ajuste_precio"]) : 0.0;
+                    $costo = isset($_POST["ajuste_costo"]) ? floatval($_POST["ajuste_costo"]) : 0.0;
+
+                    if ($precio <= 0) {
+                        \Utilities\Site::redirectToWithMsg($redirectUrl, "¡Error: El precio de venta debe ser mayor a cero!");
+                    }
+                    if ($costo < 0) {
+                        \Utilities\Site::redirectToWithMsg($redirectUrl, "¡Error: El costo de adquisición no puede ser negativo!");
+                    }
+                    if ($precio <= $costo) {
+                        \Utilities\Site::redirectToWithMsg($redirectUrl, "¡Error: El precio de venta debe ser mayor al costo de adquisición para asegurar un margen de ganancia!");
                     }
                 }
 
@@ -118,8 +136,8 @@ class Productos extends PrivateController
                         $prod["invPrdCodInt"],
                         $prod["invPrdDsc"],
                         $prod["catid"],
-                        $prod["invPrdPrecioVenta"],
-                        $prod["invPrdCosto"],
+                        $precio,
+                        $costo,
                         $newStock,
                         $prod["invPrdStockMin"],
                         $prod["invPrdTip"],
@@ -133,10 +151,10 @@ class Productos extends PrivateController
                             // Entrada por Compra: Crear o actualizar lote
                             $existingLoteEnt = DaoProductos::getLoteByCode($prdId, $loteCod);
                             if ($existingLoteEnt) {
-                                DaoProductos::incrementarLote($existingLoteEnt["loteId"], $cantidad);
+                                DaoProductos::incrementarLote($existingLoteEnt["loteId"], $cantidad, $costo);
                                 $loteId = $existingLoteEnt["loteId"];
                             } else {
-                                DaoProductos::registrarLote($prdId, $loteCod, $cantidad, $loteFechaVencimiento, $prod["invPrdCosto"]);
+                                DaoProductos::registrarLote($prdId, $loteCod, $cantidad, $loteFechaVencimiento, $costo);
                                 $loteResult = DaoProductos::getLoteByCode($prdId, $loteCod);
                                 $loteId = $loteResult ? $loteResult["loteId"] : null;
                             }

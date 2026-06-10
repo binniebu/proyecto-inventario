@@ -97,7 +97,7 @@
               </button>
               {{endif ~CanView}}
               {{if ~CanUpdate}}
-              <button type="button" class="btn btn-ajuste-stock" data-id="{{invPrdId}}" data-name="{{invPrdDsc}}" data-stock="{{invPrdStock}}" data-stockmin="{{invPrdStockMin}}" data-lotes='{{lotes_json}}' title="Ajustar Inventario">
+              <button type="button" class="btn btn-ajuste-stock" data-id="{{invPrdId}}" data-name="{{invPrdDsc}}" data-stock="{{invPrdStock}}" data-stockmin="{{invPrdStockMin}}" data-precio="{{invPrdPrecioVenta}}" data-costo="{{invPrdCosto}}" data-lotes='{{lotes_json}}' title="Ajustar Inventario">
                 <i class="fas fa-exchange-alt"></i>
               </button>
               <a href="index.php?page=mnt_producto&mode=UPD&id={{invPrdId}}&catid={{catid}}" class="btn" title="Editar">
@@ -185,6 +185,23 @@
             <input type="date" id="ajuste_lote_vence" name="ajuste_lote_vence" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; font-size: 0.9rem; box-sizing: border-box;" />
           </div>
         </div>
+
+        <div id="precio-costo-fields-container" style="margin-bottom: 1.25rem; background-color: #f8fafc; border: 1px dashed #cbd5e1; padding: 1.25rem; border-radius: 8px; display: none;">
+          <h4 style="margin-top: 0; margin-bottom: 0.75rem; font-size: 0.9rem; color: #475569; font-weight: 700; text-align: left;">Precios de Mercadería</h4>
+          
+          <div style="display: flex; gap: 1rem;">
+            <div class="form_field" style="flex: 1; margin-bottom: 0px; position: relative;">
+              <label for="ajuste_precio" style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.25rem; display: block; text-align: left;">Precio de Venta *</label>
+              <input type="number" step="0.01" min="0.01" id="ajuste_precio" name="ajuste_precio" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; font-size: 0.9rem; box-sizing: border-box;" placeholder="0.00" />
+            </div>
+            
+            <div class="form_field" style="flex: 1; margin-bottom: 0px; position: relative;">
+              <label for="ajuste_costo" style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.25rem; display: block; text-align: left;">Costo Adquisición *</label>
+              <input type="number" step="0.01" min="0.00" id="ajuste_costo" name="ajuste_costo" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; font-size: 0.9rem; box-sizing: border-box;" placeholder="0.00" />
+            </div>
+          </div>
+        </div>
+
         
         <div class="form_field" style="margin-bottom: 1.25rem;">
           <label for="ajuste_cantidad" style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; text-align: left;">Cantidad a Ajustar *</label>
@@ -258,6 +275,8 @@
 
     /* Controles del Modal de Ajuste */
     var lotesData = [];
+    var currentPrecio = "0.00";
+    var currentCosto = "0.00";
     var modal = document.getElementById("stock-modal");
     var modalPrdId = document.getElementById("modal-prd-id");
     var modalPrdName = document.getElementById("modal-prd-name");
@@ -271,6 +290,13 @@
     var ajusteBtns = document.querySelectorAll(".btn-ajuste-stock");
     console.log("Number of adjustment buttons found:", ajusteBtns.length);
     
+    var selectTipo = document.getElementById("ajuste_tipo");
+    var loteContainer = document.getElementById("lote-fields-container");
+    var inputLoteCod = document.getElementById("ajuste_lote_cod");
+    var precioContainer = document.getElementById("precio-costo-fields-container");
+    var inputPrecio = document.getElementById("ajuste_precio");
+    var inputCosto = document.getElementById("ajuste_costo");
+
     ajusteBtns.forEach(function(btn) {
       btn.addEventListener("click", function(e) {
         e.preventDefault();
@@ -279,12 +305,17 @@
         var name = btn.getAttribute("data-name");
         var stock = btn.getAttribute("data-stock");
         var stockmin = btn.getAttribute("data-stockmin");
+        var precio = btn.getAttribute("data-precio");
+        var costo = btn.getAttribute("data-costo");
         var lotesAttr = btn.getAttribute("data-lotes");
         try {
           lotesData = JSON.parse(lotesAttr || "[]");
         } catch(ex) {
           lotesData = [];
         }
+        
+        currentPrecio = precio || "0.00";
+        currentCosto = costo || "0.00";
         
         console.log("Ajuste details - ID:", id, "Name:", name, "Stock:", stock, "Lotes:", lotesData);
         
@@ -297,6 +328,8 @@
         var mField = document.getElementById("ajuste_motivo");
         if (qField) qField.value = "";
         if (mField) mField.value = "";
+        
+        if (selectTipo) selectTipo.value = "ENT";
         
         if (modal) {
           modal.style.display = "flex";
@@ -314,10 +347,6 @@
       document.body.style.overflow = "";
     }
     
-    var selectTipo = document.getElementById("ajuste_tipo");
-    var loteContainer = document.getElementById("lote-fields-container");
-    var inputLoteCod = document.getElementById("ajuste_lote_cod");
-
     function toggleLoteFields() {
       var headerText = document.getElementById("lote-fields-header");
       var labelText = document.getElementById("lote-fields-label");
@@ -333,6 +362,16 @@
         if (headerText) headerText.textContent = "Información del Lote";
         if (labelText) labelText.textContent = "Código de Lote *";
         if (venceContainer) venceContainer.style.display = "block";
+        
+        if (precioContainer) precioContainer.style.display = "block";
+        if (inputPrecio) {
+          inputPrecio.required = true;
+          inputPrecio.value = currentPrecio;
+        }
+        if (inputCosto) {
+          inputCosto.required = true;
+          inputCosto.value = currentCosto;
+        }
       } else {
         /* Para salidas y mermas: es opcional */
         if (lotesData.length > 0) {
@@ -354,6 +393,16 @@
           }
           if (venceContainer) venceContainer.style.display = "none";
           if (inputLoteVence) inputLoteVence.value = "";
+        }
+        
+        if (precioContainer) precioContainer.style.display = "none";
+        if (inputPrecio) {
+          inputPrecio.required = false;
+          inputPrecio.value = "";
+        }
+        if (inputCosto) {
+          inputCosto.required = false;
+          inputCosto.value = "";
         }
       }
     }
@@ -454,6 +503,53 @@
         }
 
         if (tipo === "ENT") {
+          var inputPrecio = document.getElementById("ajuste_precio");
+          var inputCosto = document.getElementById("ajuste_costo");
+          var precioVal = inputPrecio ? parseFloat(inputPrecio.value) : 0;
+          var costoVal = inputCosto ? parseFloat(inputCosto.value) : 0;
+
+          if (isNaN(precioVal) || precioVal <= 0) {
+            e.preventDefault();
+            Swal.fire({
+              title: "Atención",
+              text: "¡Error: El precio de venta debe ser mayor a cero!",
+              icon: "warning",
+              confirmButtonColor: "#10b981",
+              confirmButtonText: "Aceptar"
+            }).then(function() {
+              if (inputPrecio) inputPrecio.focus();
+            });
+            return false;
+          }
+
+          if (isNaN(costoVal) || costoVal < 0) {
+            e.preventDefault();
+            Swal.fire({
+              title: "Atención",
+              text: "¡Error: El costo de adquisición no puede ser negativo!",
+              icon: "warning",
+              confirmButtonColor: "#10b981",
+              confirmButtonText: "Aceptar"
+            }).then(function() {
+              if (inputCosto) inputCosto.focus();
+            });
+            return false;
+          }
+
+          if (precioVal <= costoVal) {
+            e.preventDefault();
+            Swal.fire({
+              title: "Atención",
+              text: "¡Error: El precio de venta debe ser mayor al costo de adquisición para asegurar un margen de ganancia!",
+              icon: "warning",
+              confirmButtonColor: "#10b981",
+              confirmButtonText: "Aceptar"
+            }).then(function() {
+              if (inputPrecio) inputPrecio.focus();
+            });
+            return false;
+          }
+
           var venceInput = document.getElementById("ajuste_lote_vence");
           if (venceInput && venceInput.value) {
             var selectedDate = venceInput.value;

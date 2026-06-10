@@ -18,6 +18,11 @@
   {{foreach BeginScripts}}
     <script src="{{~BASE_PATH}}/{{this}}"></script>
   {{endfor BeginScripts}}
+  <style>
+    .swal2-container {
+      z-index: 99999 !important;
+    }
+  </style>
 </head>
 
 <body>

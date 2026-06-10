@@ -161,14 +161,24 @@ class Productos extends \Dao\Table
         return self::obtenerUnRegistro($sqlstr, ["invPrdId" => $invPrdId, "loteCod" => $loteCod]);
     }
 
-    static public function incrementarLote($loteId, $cantidad)
+    static public function incrementarLote($loteId, $cantidad, $costo = null)
     {
-        $sqlupd = "UPDATE lotes_inventario SET 
-            loteCantOriginal = loteCantOriginal + :cantidad, 
-            loteCantActual = loteCantActual + :cantidad,
-            loteEst = 'ACT'
-            WHERE loteId = :loteId;";
-        return self::executeNonQuery($sqlupd, ["loteId" => $loteId, "cantidad" => $cantidad]);
+        if ($costo !== null) {
+            $sqlupd = "UPDATE lotes_inventario SET 
+                loteCantOriginal = loteCantOriginal + :cantidad, 
+                loteCantActual = loteCantActual + :cantidad,
+                loteCostoUnitario = :costo,
+                loteEst = 'ACT'
+                WHERE loteId = :loteId;";
+            return self::executeNonQuery($sqlupd, ["loteId" => $loteId, "cantidad" => $cantidad, "costo" => $costo]);
+        } else {
+            $sqlupd = "UPDATE lotes_inventario SET 
+                loteCantOriginal = loteCantOriginal + :cantidad, 
+                loteCantActual = loteCantActual + :cantidad,
+                loteEst = 'ACT'
+                WHERE loteId = :loteId;";
+            return self::executeNonQuery($sqlupd, ["loteId" => $loteId, "cantidad" => $cantidad]);
+        }
     }
 
     static public function getLotesActivos($invPrdId)

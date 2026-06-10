@@ -108,8 +108,18 @@ class Producto extends PrivateController
         $this->product["invPrdDsc"] = isset($_POST["invPrdDsc"]) ? trim($_POST["invPrdDsc"]) : "";
         $this->product["catid"] = isset($_POST["catid"]) ? intval($_POST["catid"]) : 0;
         $this->product["provId"] = isset($_POST["provId"]) ? intval($_POST["provId"]) : 0;
-        $this->product["invPrdPrecioVenta"] = isset($_POST["invPrdPrecioVenta"]) ? floatval($_POST["invPrdPrecioVenta"]) : 0.00;
-        $this->product["invPrdCosto"] = isset($_POST["invPrdCosto"]) ? floatval($_POST["invPrdCosto"]) : 0.00;
+        
+        if ($this->mode === "INS") {
+            $this->product["invPrdPrecioVenta"] = isset($_POST["invPrdPrecioVenta"]) ? floatval($_POST["invPrdPrecioVenta"]) : 0.00;
+            $this->product["invPrdCosto"] = isset($_POST["invPrdCosto"]) ? floatval($_POST["invPrdCosto"]) : 0.00;
+        } else {
+            $dbProduct = DaoProductos::getProductoByCode($this->id);
+            if ($dbProduct) {
+                $this->product["invPrdPrecioVenta"] = floatval($dbProduct["invPrdPrecioVenta"]);
+                $this->product["invPrdCosto"] = floatval($dbProduct["invPrdCosto"]);
+            }
+        }
+        
         $this->product["invPrdStockMin"] = isset($_POST["invPrdStockMin"]) ? intval($_POST["invPrdStockMin"]) : 10;
         $this->product["invPrdTip"] = isset($_POST["invPrdTip"]) ? $_POST["invPrdTip"] : "PRD";
         
@@ -311,6 +321,7 @@ class Producto extends PrivateController
         $this->product["stock_readonly"] = ($this->mode === "INS") ? "" : "readonly";
         $this->product["showaction"] = ($this->mode !== "DSP") ? true : false;
         $this->product["show_lote_fields"] = ($this->mode === "INS");
+        $this->product["show_price_cost_fields"] = ($this->mode === "INS" || $this->mode === "DSP");
         $this->product["provId"] = isset($this->product["provId"]) ? intval($this->product["provId"]) : 0;
 
         // Map type indicators
