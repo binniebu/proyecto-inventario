@@ -55,12 +55,23 @@ INSERT IGNORE INTO funciones_roles (rolescod, fncod, fnrolest, fnexp)
 SELECT r.rolescod, f.fncod, 'ACT', DATE_ADD(NOW(), INTERVAL 365 DAY)
 FROM roles r
 JOIN funciones f
-WHERE r.rolescod IN ('PRP', 'ADM', 'AUD')
+WHERE r.rolescod IN ('PRP', 'ADM')
   AND f.fncod IN (
     'Controllers\\Mnt\\Proveedores',
     'Controllers\\Mnt\\Proveedor',
     'Controllers\\Mnt\\Proveedor\\New',
     'Controllers\\Mnt\\Proveedor\\Upd',
+    'Controllers\\Mnt\\Proveedor\\Dsp'
+  );
+
+INSERT IGNORE INTO funciones_roles (rolescod, fncod, fnrolest, fnexp)
+SELECT r.rolescod, f.fncod, 'ACT', DATE_ADD(NOW(), INTERVAL 365 DAY)
+FROM roles r
+JOIN funciones f
+WHERE r.rolescod = 'AUD'
+  AND f.fncod IN (
+    'Controllers\\Mnt\\Proveedores',
+    'Controllers\\Mnt\\Proveedor',
     'Controllers\\Mnt\\Proveedor\\Dsp'
   );
 
